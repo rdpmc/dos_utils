@@ -1,0 +1,3963 @@
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 1
+lz.asm
+
+
+
+      1					 ;0:3a/70/44 (16/100000)
+      2					 .586
+      3	00000000			 .model	flat,stdcall
+      4					 include w_con.inc
+1     5		  =0000			 REG_OPTION_NON_VOLATILE equ (00000000h)
+1     6		  =0001			 REG_OPTION_VOLATILE equ (00000001h)
+1     7		  =0010			 CREATE_NEW_CONSOLE		      equ 10h
+1     8		  =0020			 NORMAL_PRIORITY_CLASS		      equ 20h
+1     9		  =001A			 CSIDL_APPDATA		 equ 1ah
+1    10		  =0000			 SHGFP_TYPE_CURRENT		 equ 0
+1    11		  =0000			 SB_HORZ			      equ 0
+1    12		  =0001			 SB_VERT			      equ 1
+1    13		  =0002			 SB_CTL				      equ 2
+1    14		  =0003			 SB_BOTH			      equ 3
+1    15		  =0001			 PIPE_ACCESS_INBOUND		      equ 1h
+1    16		  =0002			 PIPE_ACCESS_OUTBOUND		      equ 2h
+1    17		  =0003			 PIPE_ACCESS_DUPLEX		      equ 3h
+1    18		  =0000			 PIPE_CLIENT_END		      equ 0h
+1    19		  =0001			 PIPE_SERVER_END		      equ 1h
+1    20		  =0000			 PIPE_WAIT			      equ 0h
+1    21		  =0001			 PIPE_NOWAIT			      equ 1h
+1    22		  =0000			 PIPE_READMODE_BYTE		      equ 0h
+1    23		  =0002			 PIPE_READMODE_MESSAGE		      equ 2h
+1    24		  =0000			 PIPE_TYPE_BYTE			      equ 0h
+1    25		  =0004			 PIPE_TYPE_MESSAGE		      equ 4h
+1    26		  =00FF			 PIPE_UNLIMITED_INSTANCES	      equ 255
+1    27
+1    28		  = 0x00000001		  FLAG_ICC_FORCE_CONNECTION equ	 0x00000001
+1    29
+1    30		  =0001			 KEY_EVENT			      equ 1h
+1    31		  =0002			 MOUSE_EVENT				equ 2h
+1    32		  =0001			 FOREGROUND_BLUE		      equ 1h
+1    33		  =0002			 FOREGROUND_GREEN		      equ 2h
+1    34		  =0004			 FOREGROUND_RED			      equ 4h
+1    35		  =0008			 FOREGROUND_INTENSITY		      equ 8h
+1    36		  =0010			 BACKGROUND_BLUE		      equ 10h
+1    37		  =0020			 BACKGROUND_GREEN		      equ 20h
+1    38		  =0040			 BACKGROUND_RED			      equ 40h
+1    39		  =0080			 BACKGROUND_INTENSITY		      equ 80h
+1    40
+1    41		  =001C			 SM_CXMIN			      equ 28
+1    42		  =001D			 SM_CYMIN			      equ 29
+1    43		  =-000A		 STD_INPUT_HANDLE		      equ -10
+1    44		  =-000B		 STD_OUTPUT_HANDLE		      equ -11
+1    45		  =-000C		 STD_ERROR_HANDLE		      equ -12
+1    46					 ;;;;;;;;;; WININET CONSTS
+1    47		  =0015			 INTERNET_DEFAULT_FTP_PORT		 equ 21
+1    48		  =0001			 INTERNET_SERVICE_FTP	 equ 1
+1    49		  =10000000		 INTERNET_FLAG_ASYNC			 equ 10000000h
+1    50		  =0001			 INTERNET_OPEN_TYPE_DIRECT   equ 1
+1    51		  =0001			 FTP_TRANSFER_TYPE_ASCII	 equ 1
+1    52		  =0002			 FTP_TRANSFER_TYPE_BINARY	 equ 2
+1    53
+1    54		  =0103			 STATUS_PENDING	equ 00000103h
+1    55					 STILL_ACTIVE		   equ STATUS_PENDING
+1    56		  =0001			 EXCEPTION_EXECUTE_HANDLER		 equ 1
+1    57		  =0000			 EXCEPTION_CONTINUE_SEARCH		 equ  0
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 2
+lz.asm
+
+
+
+1    58		  =-0001		 EXCEPTION_CONTINUE_EXECUTION		 equ -1
+1    59		  =04000000		 FILE_FLAG_DELETE_ON_CLOSE	      equ 4000000h
+1    60		  =0000			 BI_RGB				      equ 0
+1    61
+1    62
+1    63		  =0002			 OBJ_INHERIT		 equ 00000002h
+1    64		  =0010			 OBJ_PERMANENT		 equ 00000010h
+1    65		  =0020			 OBJ_EXCLUSIVE		 equ 00000020h
+1    66		  =0040			 OBJ_CASE_INSENSITIVE	 equ 00000040h
+1    67		  =0080			 OBJ_OPENIF		 equ 00000080h
+1    68		  =0100			 OBJ_OPENLINK		 equ 00000100h
+1    69		  =0200			 OBJ_KERNEL_HANDLE	 equ 00000200h
+1    70		  =03F2			 OBJ_VALID_ATTRIBUTES	 equ 000003F2h
+1    71
+1    72		  =0001			 SERVICE_STOPPED		      equ 1h
+1    73		  =0002			 SERVICE_START_PENDING		      equ 2h
+1    74		  =0001			 SECTION_QUERY			      equ 1h
+1    75		  =0002			 SECTION_MAP_WRITE		      equ 2h
+1    76		  =0004			 SECTION_MAP_READ		      equ 4h
+1    77		  =0008			 SECTION_MAP_EXECUTE		      equ 8h
+1    78		  =0010			 SECTION_EXTEND_SIZE		      equ 10h
+1    79					 FILE_MAP_COPY			      equ SECTION_QUERY
+1    80					 FILE_MAP_WRITE			      equ SECTION_MAP_WRITE
+1    81					 FILE_MAP_READ			      equ SECTION_MAP_READ
+1    82
+1    83
+1    84		  =0001			 SERVICE_CONTROL_STOP		      equ 1h
+1    85		  =0002			 SERVICE_CONTROL_PAUSE		      equ 2h
+1    86		  =0003			 SERVICE_CONTROL_CONTINUE	      equ 3h
+1    87		  =0004			 SERVICE_CONTROL_INTERROGATE	      equ 4h
+1    88		  =0005			 SERVICE_CONTROL_SHUTDOWN	      equ 5h
+1    89		  =0002			 PF_INET	  equ	     2
+1    90		  =0001			 FD_READ	  equ	     001h
+1    91		  =0002			 FD_WRITE	   equ	     002h
+1    92		  =0004			 FD_OOB		 equ	     004h
+1    93		  =0008			 FD_ACCEPT	    equ	     008h
+1    94		  =0010			 FD_CONNECT	     equ     010h
+1    95		  =0020			 FD_CLOSE	   equ	     020h
+1    96		  =0001			 SOCK_STREAM	      equ    1
+1    97		  =0002			 SOCK_DGRAM	     equ     2
+1    98		  =0003			 SOCK_RAW	   equ	     3
+1    99		  =0004			 SOCK_RDM	   equ	     4
+1   100		  =0005			 SOCK_SEQPACKET		 equ 5
+1   101
+1   102
+1   103		  =0000			 SERVICE_BOOT_START equ	 00000000h
+1   104		  =0001			 SERVICE_SYSTEM_START equ  00000001h
+1   105		  =0002			 SERVICE_AUTO_START equ	 00000002h
+1   106		  =0003			 SERVICE_DEMAND_START equ  00000003h
+1   107		  =0004			 SERVICE_DISABLED equ  00000004h
+1   108		  =0000			 SERVICE_ERROR_IGNORE equ  00000000h
+1   109		  =0001			 SERVICE_ERROR_NORMAL equ  00000001h
+1   110		  =0002			 SERVICE_ERROR_SEVERE equ  00000002h
+1   111		  =0003			 SERVICE_ERROR_CRITICAL	equ  00000003h
+1   112		  =0006			 SERVICE_PAUSE_PENDING		      equ  6h
+1   113		  =0007			 SERVICE_PAUSED			      equ  7h
+1   114		  =0001			 SERVICE_ACCEPT_STOP		      equ  1h
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 3
+lz.asm
+
+
+
+1   115		  =0002			 SERVICE_ACCEPT_PAUSE_CONTINUE	      equ  2h
+1   116		  =0004			 SERVICE_ACCEPT_SHUTDOWN	      equ  4h
+1   117		  =0001			 SC_MANAGER_CONNECT		      equ  1h
+1   118		  =0002			 SC_MANAGER_CREATE_SERVICE	      equ  2h
+1   119		  =0004			 SC_MANAGER_ENUMERATE_SERVICE	      equ  4h
+1   120		  =0008			 SC_MANAGER_LOCK		      equ  8h
+1   121		  =0010			 SC_MANAGER_QUERY_LOCK_STATUS	      equ  10h
+1   122		  =0020			 SC_MANAGER_MODIFY_BOOT_CONFIG	      equ  20h
+1   123		  =0001			 SERVICE_QUERY_CONFIG		      equ  1h
+1   124		  =0002			 SERVICE_CHANGE_CONFIG		      equ  2h
+1   125		  =0004			 SERVICE_QUERY_STATUS		      equ  4h
+1   126		  =0008			 SERVICE_ENUMERATE_DEPENDENTS	      equ  8h
+1   127		  =0010			 SERVICE_START			      equ  10h
+1   128		  =0020			 SERVICE_STOP			      equ  20h
+1   129		  =0040			 SERVICE_PAUSE_CONTINUE		      equ  40h
+1   130		  =0080			 SERVICE_INTERROGATE		      equ  80h
+1   131		  =0100			 SERVICE_USER_DEFINED_CONTROL	      equ  100h
+1   132		  =0001			 SERVICE_KERNEL_DRIVER equ  00000001h
+1   133		  =0002			 SERVICE_FILE_SYSTEM_DRIVER equ	 00000002h
+1   134		  =0004			 SERVICE_ADAPTER equ  00000004h
+1   135		  =0008			 SERVICE_RECOGNIZER_DRIVER equ	00000008h
+1   136		  =00010000		 DELETE			   equ	      00010000h
+1   137
+1   138					 ;*********
+1   139		  =00800000		 SEC_FILE		   equ	800000h
+1   140		  =01000000		 SEC_IMAGE		   equ	1000000h
+1   141		  =04000000		 SEC_RESERVE		   equ	4000000h
+1   142		  =08000000		 SEC_COMMIT		   equ	8000000h
+1   143		  =10000000		 SEC_NOCACHE		   equ	10000000h
+1   144		  =0001			 DT_CENTER			      equ  1h
+1   145		  =0002			 DT_RIGHT			      equ  2h
+1   146		  =0004			 DT_VCENTER			      equ  4h
+1   147		  =0000			 AF_UNSPEC	    equ	      0
+1   148		  =0001			 AF_UNIX	  equ	      1
+1   149		  =0002			 AF_INET	  equ	      2
+1   150		  =0003			 AF_IMPLINK	     equ      3
+1   151		  =0004			 AF_PUP		 equ	      4
+1   152		  =0005			 AF_CHAOS	   equ	      5
+1   153		  =0006			 AF_NS		equ	      6
+1   154		  =0006			 AF_IPX		 equ	      6
+1   155		  =0007			 AF_ISO		 equ	      7
+1   156					 AF_OSI		 equ	      AF_ISO
+1   157		  =0008			 AF_ECMA	  equ	      8
+1   158		  =0009			 AF_DATAKIT	     equ      9
+1   159		  =000A			 AF_CCITT	   equ	      10
+1   160		  =000B			 AF_SNA		 equ	      11
+1   161		  =000C			 AF_DECnet	    equ	      12
+1   162		  =0001			 MOD_ALT			      equ  1h
+1   163		  =0002			 MOD_CONTROL			      equ  2h
+1   164		  =0004			 MOD_SHIFT			      equ  4h
+1   165		  =0008			 MOD_WIN					   equ	8h
+1   166
+1   167		  =000D			 AF_DLI		 equ	      13
+1   168		  =000E			 AF_LAT		 equ	      14
+1   169		  =000F			 AF_HYLINK	    equ	      15
+1   170		  =0010			 AF_APPLETALK	       equ    16
+1   171		  =0011			 AF_NETBIOS	     equ      17
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 4
+lz.asm
+
+
+
+1   172		  =0012			 AF_MAX		 equ	      18
+1   173
+1   174		  =000F0000		 STANDARD_RIGHTS_REQUIRED	      equ  0F0000h
+1   175		  =00100000		 SYNCHRONIZE			      equ  100000h
+1   176		  =001F0FFF		 PROCESS_ALL_ACCESS equ	 (STANDARD_RIGHTS_REQUIRED + SYNCHRONIZE + 0FFFh)
+1   177
+1   178		  =0001			 PAGE_NOACCESS		   equ	1
+1   179		  =0002			 PAGE_READONLY		   equ	2
+1   180		  =0004			 PAGE_READWRITE		   equ	4
+1   181		  =0008			 PAGE_WRITECOPY		   equ	8
+1   182		  =0010			 PAGE_EXECUTE		   equ	10h
+1   183		  =0020			 PAGE_EXECUTE_READ	   equ	20h
+1   184		  =0040			 PAGE_EXECUTE_READWRITE	   equ	40h
+1   185		  =0080			 PAGE_EXECUTE_WRITECOPY	   equ	80h
+1   186		  =0100			 PAGE_GUARD		   equ	100h
+1   187		  =0200			 PAGE_NOCACHE		   equ	200h
+1   188		  =1000			 MEM_COMMIT		   equ	1000h
+1   189		  =2000			 MEM_RESERVE		   equ	2000h
+1   190		  =4000			 MEM_DECOMMIT		   equ	4000h
+1   191		  =8000			 MEM_RELEASE		   equ	8000h
+1   192		  =00010000		 MEM_FREE		   equ	10000h
+1   193		  =00020000		 MEM_PRIVATE		   equ	20000h
+1   194		  =0001			 OWNER_SECURITY_INFORMATION equ	 (00000001h)
+1   195		  =0002			 GROUP_SECURITY_INFORMATION equ	 (00000002h)
+1   196		  =0004			 DACL_SECURITY_INFORMATION equ	(00000004h)
+1   197		  =0008			 SACL_SECURITY_INFORMATION equ	(00000008h)
+1   198		  =0002			 ACL_REVISION equ  (2)
+1   199		  =0004			 SE_DACL_PRESENT equ  (0004h)
+1   200		  =0008			 SE_DACL_DEFAULTED equ	(0008h)
+1   201		  =0001			 SECURITY_DESCRIPTOR_REVISION	      equ  1
+1   202		  =0000			 THREAD_PRIORITY_NORMAL		      equ  0
+1   203		  =0001			 KEY_QUERY_VALUE		      equ  1h
+1   204		  =0002			 KEY_SET_VALUE			      equ  2h
+1   205		  =0004			 KEY_CREATE_SUB_KEY		      equ  4h
+1   206		  =0008			 KEY_ENUMERATE_SUB_KEYS		      equ  8h
+1   207		  =0010			 KEY_NOTIFY			      equ  10h
+1   208		  =0020			 KEY_CREATE_LINK		      equ  20h
+1   209		  =0019			 KEY_READ   equ	 KEY_QUERY_VALUE + KEY_ENUMERATE_SUB_KEYS + KEY_NOTIFY
+1   210		  =0006			 KEY_WRITE equ	KEY_SET_VALUE +	KEY_CREATE_SUB_KEY
+1   211					 KEY_EXECUTE			      equ  KEY_READ
+1   212
+1   213
+1   214		  =80000000		 HKEY_CLASSES_ROOT		      equ  80000000h
+1   215		  =80000001		 HKEY_CURRENT_USER		      equ  80000001h
+1   216		  =80000002		 HKEY_LOCAL_MACHINE		      equ  80000002h
+1   217		  =80000003		 HKEY_USERS			      equ  80000003h
+1   218		  =80000004		 HKEY_PERFORMANCE_DATA		      equ  80000004h
+1   219		  =80000005		 HKEY_CURRENT_CONFIG		      equ  80000005h
+1   220		  =0001			 REG_SZ				      equ  1
+1   221		  =0002			 REG_EXPAND_SZ			      equ  2
+1   222		  =0003			 REG_BINARY			      equ  3
+1   223		  =0004			 REG_DWORD			      equ  4
+1   224		  =0000			 ERROR_SUCCESS			      equ  0
+1   225		  =-0001		 WH_MIN				      equ  -1
+1   226		  =-0001		 WH_MSGFILTER			      equ  -1
+1   227		  =0000			 WH_JOURNALRECORD		      equ  0
+1   228		  =0001			 WH_JOURNALPLAYBACK		      equ  1
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 5
+lz.asm
+
+
+
+1   229		  =0002			 WH_KEYBOARD			      equ  2
+1   230		  =0003			 WH_GETMESSAGE			      equ  3
+1   231		  =0004			 WH_CALLWNDPROC			      equ  4
+1   232		  =0005			 WH_CBT				      equ  5
+1   233		  =0006			 WH_SYSMSGFILTER		      equ  6
+1   234		  =0007			 WH_MOUSE			      equ  7
+1   235		  =0008			 WH_HARDWARE			      equ  8
+1   236		  =0009			 WH_DEBUG			      equ  9
+1   237		  =000A			 WH_SHELL			      equ  10
+1   238		  =000B			 WH_FOREGROUNDIDLE		      equ  11
+1   239		  =000B			 WH_MAX				      equ  11
+1   240		  =0000			 HC_ACTION			      equ  0
+1   241		  =0001			 HC_GETNEXT			      equ  1
+1   242		  =0002			 HC_SKIP			      equ  2
+1   243		  =0003			 HC_NOREMOVE			      equ  3
+1   244					 HC_NOREM			      equ  HC_NOREMOVE
+1   245		  =0004			 HC_SYSMODALON			      equ  4
+1   246		  =0005			 HC_SYSMODALOFF			      equ  5
+1   247
+1   248		  =FFFF			 HWND_BROADCAST			      equ  0FFFFh
+1   249		  =0000			 DLL_PROCESS_DETACH		      equ  0
+1   250		  =0001			 DLL_PROCESS_ATTACH		      equ  1
+1   251		  =0002			 DLL_THREAD_ATTACH		      equ  2
+1   252		  =0003			 DLL_THREAD_DETACH		      equ  3
+1   253		  =0004			 CREATE_SUSPENDED		      equ  4h
+1   254		  =0004			 GW_OWNER			      equ  4
+1   255		  =0005			 GW_CHILD			      equ  5
+1   256		  =0005			 GW_MAX				      equ  5
+1   257		  =0100			 WSADESCRIPTION_LEN	     equ  256
+1   258		  =0080			 WSASYS_STATUS_LEN	     equ  128
+1   259		  =8004667E		 FIONBIO		equ  8004667Eh
+1   260					 ;FIONSYNC		 equ  8004667Dh
+1   261		  =4004667F		 FIONREAD		equ  4004667Fh
+1   262		  =8004667D		  SIOCATMARK equ  8004667Dh
+1   263		  =-0001		 INVALID_HANDLE_VALUE		      equ  -1
+1   264		  =0004			 CS_KEYCVTWINDOW    equ	 0004H
+1   265		  =0008			 CS_DBLCLKS	    equ	 0008h
+1   266					 ;		      0010h reserved
+1   267		  =0020			 CS_OWNDC	    equ	 0020h
+1   268		  =0040			 CS_CLASSDC	    equ	 0040h
+1   269		  =0080			 CS_PARENTDC	    equ	 0080h
+1   270		  =0100			 CS_NOKEYCVT	    equ	 0100h
+1   271		  =0800			 CS_SAVEBITS	    equ	 0800h
+1   272		  =0200			 CS_NOCLOSE	    equ	 0200h
+1   273		  =1000			 CS_BYTEALIGNCLIENT equ	 1000h
+1   274		  =2000			 CS_BYTEALIGNWINDOW equ	 2000h
+1   275		  =4000			 CS_GLOBALCLASS	    equ	 4000h	  ; Global window class
+1   276		  =0001			 CS_VREDRAW			      equ  1h
+1   277		  =0002			 CS_HREDRAW			      equ  2h
+1   278
+1   279					 ;  Predefined cursor &	icon IDs
+1   280					 ;
+1   281		  =7F00			 IDC_ARROW	 equ  32512
+1   282		  =7F01			 IDC_IBEAM	 equ  32513
+1   283		  =7F02			 IDC_WAIT	 equ  32514
+1   284		  =7F03			 IDC_CROSS	 equ  32515
+1   285		  =7F04			 IDC_UPARROW	 equ  32516
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 6
+lz.asm
+
+
+
+1   286		  =7F80			 IDC_SIZE	 equ  32640
+1   287		  =7F81			 IDC_ICON	 equ  32641
+1   288		  =7F82			 IDC_SIZENWSE	 equ  32642
+1   289		  =7F83			 IDC_SIZENESW	 equ  32643
+1   290		  =7F84			 IDC_SIZEWE	 equ  32644
+1   291		  =7F85			 IDC_SIZENS	 equ  32645
+1   292
+1   293		  =7F00			 IDI_APPLICATION equ  32512
+1   294		  =7F01			 IDI_HAND	 equ  32513
+1   295		  =7F02			 IDI_QUESTION	 equ  32514
+1   296		  =7F03			 IDI_EXCLAMATION equ  32515
+1   297		  =7F04			 IDI_ASTERISK	 equ  32516
+1   298
+1   299					 ;Stock	Logical	Objects
+1   300		  =0000			 WHITE_BRUSH	 equ 0
+1   301		  =0001			 LTGRAY_BRUSH	 equ 1
+1   302		  =0002			 GRAY_BRUSH	 equ 2
+1   303		  =0003			 DKGRAY_BRUSH	 equ 3
+1   304		  =0004			 BLACK_BRUSH	 equ 4
+1   305		  =0005			 NULL_BRUSH	 equ 5
+1   306		  =0005			 HOLLOW_BRUSH	 equ 5
+1   307		  =0006			 WHITE_PEN	 equ 6
+1   308		  =0007			 BLACK_PEN	 equ 7
+1   309		  =0008			 NULL_PEN	 equ 8
+1   310		  =0009			 DOT_MARKER	 equ 9
+1   311		  =000A			 OEM_FIXED_FONT	 equ 10
+1   312		  =000B			 ANSI_FIXED_FONT equ 11
+1   313		  =000C			 ANSI_VAR_FONT	 equ 12
+1   314		  =000D			 SYSTEM_FONT	 equ 13
+1   315		  =000E			 DEVICE_DEFAULT_FONT	 equ 14
+1   316		  =000F			 DEFAULT_PALETTE equ 15
+1   317		  =0010			 SYSTEM_FIXED_FONT	 equ 16
+1   318					 ; Special CreateWindow	position value
+1   319		  =8000			 CW_USEDEFAULT	 equ	 8000h
+1   320					 ; Windows styles
+1   321					 ;
+1   322		  =0000			 WS_OVERLAPPED	 equ 000000000h
+1   323		  =C0000000		 WS_ICONICPOPUP	 equ 0C0000000h
+1   324		  =80000000		 WS_POPUP	 equ 080000000h
+1   325		  =40000000		 WS_CHILD	 equ 040000000h
+1   326		  =20000000		 WS_MINIMIZE	 equ 020000000h
+1   327		  =10000000		 WS_VISIBLE	 equ 010000000h
+1   328		  =08000000		 WS_DISABLED	 equ 008000000h
+1   329		  =04000000		 WS_CLIPSIBLINGS equ 004000000h
+1   330		  =02000000		 WS_CLIPCHILDREN equ 002000000h
+1   331		  =01000000		 WS_MAXIMIZE	 equ 001000000h
+1   332		  =00C00000		 WS_CAPTION	 equ 000C00000h	 ;WS_BORDER | WS_DLGFRAME
+1   333		  =00800000		 WS_BORDER	 equ 000800000h
+1   334		  =00400000		 WS_DLGFRAME	 equ 000400000h
+1   335		  =00200000		 WS_VSCROLL	 equ 000200000h
+1   336		  =00100000		 WS_HSCROLL	 equ 000100000h
+1   337		  =00080000		 WS_SYSMENU	 equ 000080000h
+1   338		  =00040000		 WS_THICKFRAME	 equ 000040000h
+1   339		  =00020000		 WS_HREDRAW	 equ 000020000h
+1   340		  =00010000		 WS_VREDRAW	 equ 000010000h
+1   341		  =00020000		 WS_GROUP	 equ 000020000h
+1   342		  =00010000		 WS_TABSTOP	 equ 000010000h
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 7
+lz.asm
+
+
+
+1   343		  =00020000		 WS_MINIMIZEBOX	 equ 000020000h
+1   344		  =00010000		 WS_MAXIMIZEBOX	 equ 000010000h
+1   345					 ; Common Window Styles
+1   346		  =00CF0000		 WS_OVERLAPPEDWINDOW	 equ WS_OVERLAPPED + WS_CAPTION	+ WS_SYSMENU + WS_THICKFRAME +	    +
+    347					 WS_MINIMIZEBOX	+ WS_MAXIMIZEBOX
+1   348		  =80880000		 WS_POPUPWINDOW	 equ WS_POPUP +	WS_BORDER + WS_SYSMENU
+1   349					 WS_TILEDWINDOW	 equ WS_OVERLAPPEDWINDOW
+1   350					 WS_TILED	 equ WS_OVERLAPPED
+1   351
+1   352					 ; ShowWindow()	Commands
+1   353		  =0000			 SW_HIDE equ 0
+1   354		  =0001			 SW_SHOWNORMAL	 equ  1
+1   355		  =0001			 SW_NORMAL	 equ 1
+1   356		  =0002			 SW_SHOWMINIMIZED	 equ 2
+1   357		  =0003			 SW_SHOWMAXIMIZED	 equ 3
+1   358		  =0003			 SW_MAXIMIZE	 equ 3
+1   359		  =0004			 SW_SHOWNOACTIVATE	 equ 4
+1   360		  =0005			 SW_SHOW equ 5
+1   361		  =0006			 SW_MINIMIZE	 equ 6
+1   362		  =0007			 SW_SHOWMINNOACTIVE	 equ 7
+1   363		  =0008			 SW_SHOWNA	 equ 8
+1   364		  =0009			 SW_RESTORE			      equ  9
+1   365		  =000A			 SW_SHOWDEFAULT			      equ  10
+1   366
+1   367					 ;
+1   368					 ;  Window State Messages
+1   369					 ;
+1   370		  =0000			 WM_STATE	     equ  0000H
+1   371
+1   372		  =0000			 WM_NULL	     equ  0000h
+1   373		  =0001			 WM_CREATE	     equ  0001h
+1   374		  =0002			 WM_DESTROY	     equ  0002h
+1   375		  =0003			 WM_MOVE	     equ  0003h
+1   376		  =0005			 WM_SIZE	     equ  0005h
+1   377		  =0006			 WM_ACTIVATE	     equ  0006h
+1   378		  =0007			 WM_SETFOCUS	     equ  0007h
+1   379		  =0008			 WM_KILLFOCUS	     equ  0008h
+1   380		  =000A			 WM_ENABLE	     equ  000Ah
+1   381		  =000B			 WM_SETREDRAW	     equ  000Bh
+1   382		  =000C			 WM_SETTEXT	     equ  000Ch
+1   383		  =000D			 WM_GETTEXT	     equ  000Dh
+1   384		  =000E			 WM_GETTEXTLENGTH    equ  000Eh
+1   385		  =000F			 WM_PAINT	     equ  000Fh
+1   386		  =0010			 WM_CLOSE	     equ  0010h
+1   387		  =0011			 WM_QUERYENDSESSION  equ  0011h
+1   388		  =0012			 WM_QUIT	     equ  0012h
+1   389		  =0013			 WM_QUERYOPEN	     equ  0013h
+1   390		  =0014			 WM_ERASEBKGND	     equ  0014h
+1   391		  =0015			 WM_SYSCOLORCHANGE   equ  0015h
+1   392		  =0016			 WM_ENDSESSION	     equ  0016h
+1   393		  =0017			 WM_SYSTEMERROR	     equ  0017h
+1   394		  =0018			 WM_SHOWWINDOW	     equ  0018h
+1   395		  =0019			 WM_CTLCOLOR	     equ  0019h
+1   396		  =001A			 WM_WININICHANGE     equ  001Ah
+1   397		  =001B			 WM_DEVMODECHANGE    equ  001Bh
+1   398		  =001C			 WM_ACTIVATEAPP	     equ  001Ch
+1   399		  =001D			 WM_FONTCHANGE	     equ  001Dh
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 8
+lz.asm
+
+
+
+1   400		  =001E			 WM_TIMECHANGE	     equ  001Eh
+1   401		  =001F			 WM_CANCELMODE	     equ  001Fh
+1   402		  =0020			 WM_SETCURSOR	     equ  0020h
+1   403		  =0021			 WM_MOUSEACTIVATE    equ  0021h
+1   404		  =0022			 WM_CHILDACTIVATE    equ  0022h
+1   405		  =0023			 WM_QUEUESYNC	     equ  0023h
+1   406		  =0024			 WM_GETMINMAXINFO    equ  0024h
+1   407		  =0026			 WM_PAINTICON	     equ  0026h
+1   408		  =0027			 WM_ICONERASEBKGND   equ  0027h
+1   409		  =0028			 WM_NEXTDLGCTL	     equ  0028h
+1   410		  =002A			 WM_SPOOLERSTATUS    equ  002Ah
+1   411		  =002B			 WM_DRAWITEM	     equ  002Bh
+1   412		  =002C			 WM_MEASUREITEM	     equ  002Ch
+1   413		  =002D			 WM_DELETEITEM	     equ  002Dh
+1   414		  =002E			 WM_VKEYTOITEM	     equ  002Eh
+1   415		  =002F			 WM_CHARTOITEM	     equ  002Fh
+1   416		  =0030			 WM_SETFONT	     equ  0030h
+1   417		  =0031			 WM_GETFONT	     equ  0031h
+1   418		  =0037			 WM_QUERYDRAGICON    equ  0037h
+1   419		  =0039			 WM_COMPAREITEM	     equ  0039h
+1   420		  =0041			 WM_COMPACTING	     equ  0041h
+1   421		  =0044			 WM_COMMNOTIFY	     equ  0044h
+1   422		  =0046			 WM_WINDOWPOSCHANGING equ  0046h
+1   423		  =0047			 WM_WINDOWPOSCHANGED equ  0047h
+1   424		  =0048			 WM_POWER	     equ  0048h
+1   425
+1   426		  =0081			 WM_NCCREATE	     equ  0081h
+1   427		  =0082			 WM_NCDESTROY	     equ  0082h
+1   428		  =0083			 WM_NCCALCSIZE	     equ  0083h
+1   429		  =0084			 WM_NCHITTEST	     equ  0084h
+1   430		  =0085			 WM_NCPAINT	     equ  0085h
+1   431		  =0086			 WM_NCACTIVATE	     equ  0086h
+1   432		  =0087			 WM_GETDLGCODE	     equ  0087h
+1   433		  =00A0			 WM_NCMOUSEMOVE	     equ  00A0h
+1   434		  =00A1			 WM_NCLBUTTONDOWN    equ  00A1h
+1   435		  =00A2			 WM_NCLBUTTONUP	     equ  00A2h
+1   436		  =00A3			 WM_NCLBUTTONDBLCLK  equ  00A3h
+1   437		  =00A4			 WM_NCRBUTTONDOWN    equ  00A4h
+1   438		  =00A5			 WM_NCRBUTTONUP	     equ  00A5h
+1   439		  =00A6			 WM_NCRBUTTONDBLCLK  equ  00A6h
+1   440		  =00A7			 WM_NCMBUTTONDOWN    equ  00A7h
+1   441		  =00A8			 WM_NCMBUTTONUP	     equ  00A8h
+1   442		  =00A9			 WM_NCMBUTTONDBLCLK  equ  00A9h
+1   443
+1   444		  =0100			 WM_KEYFIRST	     equ  0100h
+1   445		  =0100			 WM_KEYDOWN	     equ  0100h
+1   446		  =0101			 WM_KEYUP	     equ  0101h
+1   447		  =0102			 WM_CHAR	     equ  0102h
+1   448		  =0103			 WM_DEADCHAR	     equ  0103h
+1   449		  =0104			 WM_SYSKEYDOWN	     equ  0104h
+1   450		  =0105			 WM_SYSKEYUP	     equ  0105h
+1   451		  =0106			 WM_SYSCHAR	     equ  0106h
+1   452		  =0107			 WM_SYSDEADCHAR	     equ  0107h
+1   453		  =0108			 WM_KEYLAST	     equ  0108h
+1   454
+1   455		  =0110			 WM_INITDIALOG	     equ  0110h
+1   456		  =0111			 WM_COMMAND	     equ  0111h
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 9
+lz.asm
+
+
+
+1   457		  =0112			 WM_SYSCOMMAND	     equ  0112h
+1   458		  =0113			 WM_TIMER	     equ  0113h
+1   459		  =0114			 WM_HSCROLL	     equ  0114h
+1   460		  =0115			 WM_VSCROLL	     equ  0115h
+1   461		  =0116			 WM_INITMENU	     equ  0116h
+1   462		  =0117			 WM_INITMENUPOPUP    equ  0117h
+1   463		  =011F			 WM_MENUSELECT	     equ  011Fh
+1   464		  =0120			 WM_MENUCHAR	     equ  0120h
+1   465		  =0121			 WM_ENTERIDLE	     equ  0121h
+1   466
+1   467
+1   468		  =0200			 WM_MOUSEFIRST	     equ  0200h
+1   469		  =0200			 WM_MOUSEMOVE	     equ  0200h
+1   470		  =0201			 WM_LBUTTONDOWN	     equ  0201h
+1   471		  =0202			 WM_LBUTTONUP	     equ  0202h
+1   472		  =0203			 WM_LBUTTONDBLCLK    equ  0203h
+1   473		  =0204			 WM_RBUTTONDOWN	     equ  0204h
+1   474		  =0205			 WM_RBUTTONUP	     equ  0205h
+1   475		  =0206			 WM_RBUTTONDBLCLK    equ  0206h
+1   476		  =0207			 WM_MBUTTONDOWN	     equ  0207h
+1   477		  =0208			 WM_MBUTTONUP	     equ  0208h
+1   478		  =0209			 WM_MBUTTONDBLCLK    equ  0209h
+1   479		  =0209			 WM_MOUSELAST	     equ  0209h
+1   480
+1   481		  =0210			 WM_PARENTNOTIFY     equ  0210h
+1   482		  =0220			 WM_MDICREATE	     equ  0220h
+1   483		  =0221			 WM_MDIDESTROY	     equ  0221h
+1   484		  =0222			 WM_MDIACTIVATE	     equ  0222h
+1   485		  =0223			 WM_MDIRESTORE	     equ  0223h
+1   486		  =0224			 WM_MDINEXT	     equ  0224h
+1   487		  =0225			 WM_MDIMAXIMIZE	     equ  0225h
+1   488		  =0226			 WM_MDITILE	     equ  0226h
+1   489		  =0227			 WM_MDICASCADE	     equ  0227h
+1   490		  =0228			 WM_MDIICONARRANGE   equ  0228h
+1   491		  =0229			 WM_MDIGETACTIVE     equ  0229h
+1   492		  =0230			 WM_MDISETMENU	     equ  0230h
+1   493		  =0233			 WM_DROPFILES	     equ  0233h
+1   494
+1   495
+1   496		  =0300			 WM_CUT		     equ  0300h
+1   497		  =0301			 WM_COPY	     equ  0301h
+1   498		  =0302			 WM_PASTE	     equ  0302h
+1   499		  =0303			 WM_CLEAR	     equ  0303h
+1   500		  =0304			 WM_UNDO	     equ  0304h
+1   501		  =0305			 WM_RENDERFORMAT     equ  0305h
+1   502		  =0306			 WM_RENDERALLFORMATS equ  0306h
+1   503		  =0307			 WM_DESTROYCLIPBOARD equ  0307h
+1   504		  =0308			 WM_DRAWCLIPBOARD    equ  0308h
+1   505		  =0309			 WM_PAINTCLIPBOARD   equ  0309h
+1   506		  =030A			 WM_VSCROLLCLIPBOARD equ  030Ah
+1   507		  =030B			 WM_SIZECLIPBOARD    equ  030Bh
+1   508		  =030C			 WM_ASKCBFORMATNAME  equ  030Ch
+1   509		  =030D			 WM_CHANGECBCHAIN    equ  030Dh
+1   510		  =030E			 WM_HSCROLLCLIPBOARD equ  030Eh
+1   511		  =030F			 WM_QUERYNEWPALETTE  equ  030Fh
+1   512		  =0310			 WM_PALETTEISCHANGING equ  0310h
+1   513		  =0311			 WM_PALETTECHANGED   equ  0311h
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 10
+lz.asm
+
+
+
+1   514		  =0312			 WM_HOTKEY			      equ  312h
+1   515
+1   516		  =0380			 WM_PENWINFIRST	     equ  0380h
+1   517		  =038F			 WM_PENWINLAST	     equ  038Fh
+1   518
+1   519		  =0390			 WM_COALESCE_FIRST  equ	 0390h
+1   520		  =039F			 WM_COALESCE_LAST   equ	 039Fh
+1   521
+1   522					 ;  private window messages start here
+1   523		  =0400			 WM_USER	     equ  0400H
+1   524
+1   525					 ; flag	values for fuSound and fdwSound	arguments on [snd]PlaySound
+1   526
+1   527		  =0000			 SND_SYNC	  equ	 0h  ;/* play synchronously (default) */
+1   528		  =0001			 SND_ASYNC	 equ	 1h  ;/* play asynchronously */
+1   529		  =0002			 SND_NODEFAULT	  equ	 2h  ;/* silence (!default) if sound not found */
+1   530		  =0004			 SND_MEMORY	  equ	 4h  ;/* pszSound points to a memory file */
+1   531		  =0008			 SND_LOOP	 equ	 8h  ;/* loop the sound	until next sndPlaySound	*/
+1   532		  =0010			 SND_NOSTOP	 equ	 10h ; /* don't	stop any currently playing sound */
+1   533		  =2000			 SND_NOWAIT	 equ	 00002000h ;/* don't wait if the driver	is busy	*/
+1   534		  =00010000		 SND_ALIAS	 equ	 00010000h ;/* name is a registry alias	*/
+1   535		  =00110000		 SND_ALIAS_ID	 equ	 00110000h  ;/*	alias is a predefined ID */
+1   536		  =00020000		 SND_FILENAME	 equ	 00020000h  ;/*	name is	file name */
+1   537		  =00040004		 SND_RESOURCE	 equ	 00040004h  ;/*	name is	resource name or atom */
+1   538		  =0040			 SND_PURGE	 equ	 0040h	; /* purge non-static events for task */
+1   539		  =0080			 SND_APPLICATION equ	 0080h ; /* look for application specific association */
+1   540		  =0000			 SND_ALIAS_START equ	 0h	     ; /* alias	base */
+1   541
+1   542					 ;  MessageBox type flags
+1   543					 ;
+1   544		  =0010			 MB_ICONERROR			      equ  0010H
+1   545		  =0000			 MB_OK			 equ  0000H
+1   546		  =0001			 MB_OKCANCEL		 equ  0001H
+1   547		  =0002			 MB_ABORTRETRYIGNORE	 equ  0002H
+1   548		  =0003			 MB_YESNOCANCEL		 equ  0003H
+1   549		  =0004			 MB_YESNO		 equ  0004H
+1   550		  =0005			 MB_RETRYCANCEL		 equ  0005H
+1   551
+1   552		  =0010			 MB_ICONHAND		 equ  0010H
+1   553		  =0020			 MB_ICONQUESTION	 equ  0020H
+1   554		  =0030			 MB_ICONEXCLAMATION	 equ  0030H
+1   555		  =0040			 MB_ICONASTERISK	 equ  0040H
+1   556					 MB_ICONINFORMATION	   equ	 MB_ICONASTERISK
+1   557		  =0000			 MB_DEFBUTTON1		 equ  0000H
+1   558		  =0100			 MB_DEFBUTTON2		 equ  0100H
+1   559		  =0200			 MB_DEFBUTTON3		 equ  0200H
+1   560
+1   561		  =0000			 MB_APPLMODAL		 equ  0000H
+1   562		  =1000			 MB_SYSTEMMODAL		 equ  1000H
+1   563		  =2000			 MB_TASKMODAL		 equ  2000H
+1   564
+1   565		  =8000			 MB_NOFOCUS		 equ  8000H
+1   566					 ;/*
+1   567					 ; * DrawText()	Format Flags (из winuser.h)
+1   568					 ; */
+1   569		  =0008			 DT_BOTTOM	 equ 00000008h
+1   570		  =0010			 DT_WORDBREAK	 equ 00000010h
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 11
+lz.asm
+
+
+
+1   571		  =0020			 DT_SINGLELINE	 equ 00000020h
+1   572		  =0040			 DT_EXPANDTABS	 equ 00000040h
+1   573		  =0080			 DT_TABSTOP	 equ 00000080h
+1   574		  =0100			 DT_NOCLIP	 equ 00000100h
+1   575		  =0200			 DT_EXTERNALLEADING	 equ 00000200h
+1   576		  =0400			 DT_CALCRECT	 equ 00000400h
+1   577		  =0800			 DT_NOPREFIX	 equ 00000800h
+1   578		  =1000			 DT_INTERNAL	 equ 00001000h
+1   579
+1   580		  =2000			 DT_EDITCONTROL	 equ 00002000h
+1   581		  =4000			 DT_PATH_ELLIPSIS	 equ 00004000h
+1   582		  =8000			 DT_END_ELLIPSIS equ 00008000h
+1   583		  =00010000		 DT_MODIFYSTRING equ 00010000h
+1   584		  =00020000		 DT_RTLREADING	 equ 00020000h
+1   585		  =00040000		 DT_WORD_ELLIPSIS	 equ 00040000h
+1   586
+1   587					 ; GetSystemMetrics() codes
+1   588
+1   589		  =0000			 SM_CXSCREEN	 equ 0
+1   590		  =0001			 SM_CYSCREEN	 equ 1
+1   591
+1   592					 ;/* Ternary raster operations */
+1   593		  =00CC0020		 SRCCOPY equ 00CC0020h	 ;dest equ  source
+1   594		  =00EE0086		 SRCPAINT	 equ 00EE0086h	 ;dest equ  source OR dest
+1   595		  =008800C6		 SRCAND	 equ 008800C6h ;dest equ  source AND dest
+1   596		  =00660046		 SRCINVERT	 equ 00660046h	 ;dest equ  source XOR dest
+1   597		  =00440328		 SRCERASE	 equ 00440328h	 ;dest equ  source AND (NOT dest )
+1   598		  =00330008		 NOTSRCCOPY	 equ 00330008h	 ;dest equ  (NOT source)
+1   599		  =001100A6		 NOTSRCERASE	 equ 001100A6h	 ;dest equ  (NOT src) AND (NOT dest)
+1   600		  =00C000CA		 MERGECOPY	 equ 00C000CAh	 ;dest equ  (source AND	pattern)
+1   601		  =00BB0226		 MERGEPAINT	 equ 00BB0226h	 ;dest equ  (NOT source) OR dest
+1   602		  =00F00021		 PATCOPY equ 00F00021h	 ;dest equ  pattern
+1   603		  =00FB0A09		 PATPAINT	 equ 00FB0A09h	 ;dest equ  DPSnoo
+1   604		  =005A0049		 PATINVERT	 equ 005A0049h	 ;dest equ  pattern XOR	dest
+1   605		  =00550009		 DSTINVERT	 equ 00550009h	 ;dest equ  (NOT dest)
+1   606		  =0042			 BLACKNESS	 equ 00000042h	 ;dest equ  BLACK
+1   607		  =00FF0062		 WHITENESS	 equ 00FF0062h	 ;dest equ  WHITE
+1   608					 ;/*
+1   609					 ; * Dialog Box	Command	IDs
+1   610					 ;*/
+1   611		  =0001			 IDOK	 equ 1
+1   612		  =0002			 IDCANCEL	 equ 2
+1   613		  =0003			 IDABORT equ 3
+1   614		  =0004			 IDRETRY equ 4
+1   615		  =0005			 IDIGNORE	 equ 5
+1   616		  =0006			 IDYES	 equ 6
+1   617		  =0007			 IDNO	 equ 7
+1   618		  =0008			 IDCLOSE equ 8
+1   619		  =0009			 IDHELP	 equ 9
+1   620					 ;/*
+1   621					 ; * Edit Control Styles
+1   622					 ; */
+1   623		  =0000			 ES_LEFT equ 0000h
+1   624		  =0001			 ES_CENTER	 equ 0001h
+1   625		  =0002			 ES_RIGHT	 equ 0002h
+1   626		  =0004			 ES_MULTILINE	 equ 0004h
+1   627		  =0008			 ES_UPPERCASE	 equ 0008h
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 12
+lz.asm
+
+
+
+1   628		  =0010			 ES_LOWERCASE	 equ 0010h
+1   629		  =0020			 ES_PASSWORD	 equ 0020h
+1   630		  =0040			 ES_AUTOVSCROLL	 equ 0040h
+1   631		  =0080			 ES_AUTOHSCROLL	 equ 0080h
+1   632		  =0100			 ES_NOHIDESEL	 equ 0100h
+1   633		  =0400			 ES_OEMCONVERT	 equ 0400h
+1   634		  =0800			 ES_READONLY	 equ 0800h
+1   635		  =1000			 ES_WANTRETURN	 equ 1000h
+1   636		  =2000			 ES_NUMBER	 equ 2000h
+1   637
+1   638		  =0100			 FORMAT_MESSAGE_ALLOCATE_BUFFER	 equ 00000100h
+1   639		  =0200			 FORMAT_MESSAGE_IGNORE_INSERTS	 equ 00000200h
+1   640		  =0400			 FORMAT_MESSAGE_FROM_STRING	 equ 00000400h
+1   641		  =0800			 FORMAT_MESSAGE_FROM_HMODULE	 equ 00000800h
+1   642		  =1000			 FORMAT_MESSAGE_FROM_SYSTEM	 equ 00001000h
+1   643		  =2000			 FORMAT_MESSAGE_ARGUMENT_ARRAY	 equ 00002000h
+1   644		  =00FF			 FORMAT_MESSAGE_MAX_WIDTH_MASK	 equ 000000FFh
+1   645
+1   646					 ; * Dialog Styles
+1   647					 ;*/
+1   648		  =0001			 DS_ABSALIGN	 equ 01h
+1   649		  =0002			 DS_SYSMODAL	 equ 02h
+1   650		  =0020			 DS_LOCALEDIT	 equ 20h
+1   651		  =0040			 DS_SETFONT	 equ 40h
+1   652		  =0080			 DS_MODALFRAME	 equ 80h
+1   653		  =0100			 DS_NOIDLEMSG	 equ 100h
+1   654		  =0200			 DS_SETFOREGROUND	 equ 200h
+1   655		  =0004			 DS_3DLOOK	 equ 0004h
+1   656		  =0008			 DS_FIXEDSYS	 equ 0008h
+1   657		  =0010			 DS_NOFAILCREATE equ 0010h
+1   658		  =0400			 DS_CONTROL	 equ 0400h
+1   659		  =0800			 DS_CENTER	 equ 0800h
+1   660		  =1000			 DS_CENTERMOUSE	 equ 1000H
+1   661		  =2000			 DS_CONTEXTHELP	 equ 2000h
+1   662
+1   663
+1   664					 ;///////mys//////
+1   665					 ; DlgDirList, DlgDirListComboBox flags	values
+1   666
+1   667		  =0000			  DDL_READWRITE	      equ  0000h
+1   668		  =0001			  DDL_READONLY	      equ  0001h
+1   669		  =0002			  DDL_HIDDEN	      equ  0002h
+1   670		  =0004			  DDL_SYSTEM	      equ  0004h
+1   671		  =0010			  DDL_DIRECTORY	      equ  0010h
+1   672		  =0020			  DDL_ARCHIVE	      equ  0020h
+1   673		  =2000			  DDL_POSTMSGS	      equ  2000h
+1   674		  =4000			  DDL_DRIVES	      equ  4000h
+1   675		  =8000			  DDL_EXCLUSIVE	      equ  8000h
+1   676					 ;PeekMessage()	Options
+1   677		  =0000			 PM_NOREMOVE	equ  0000h
+1   678		  =0001			 PM_REMOVE	equ  0001h
+1   679		  =0002			 PM_NOYIELD	equ  0002h
+1   680					 ; DIB color table identifiers
+1   681					 ;
+1   682		  =0000			 DIB_RGB_COLORS	 equ  0	   ;/* color table in RGBTriples */
+1   683		  =0001			 DIB_PAL_COLORS	 equ  1	   ;/* color table in palette indices */
+1   684					 ; DIB color table identifiers
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 13
+lz.asm
+
+
+
+1   685					 ;
+1   686		  =0080			 OFS_MAXPATHNAME		      equ  128
+1   687		  =0000			 PS_SOLID			      equ  0
+1   688		  =0001			 PS_DASH			      equ  1
+1   689		  =0002			 PS_DOT				      equ  2
+1   690		  =0003			 PS_DASHDOT			      equ  3
+1   691		  =0004			 PS_DASHDOTDOT			      equ  4
+1   692		  =0005			 PS_NULL			      equ  5
+1   693		  =0006			 PS_INSIDEFRAME			      equ  6
+1   694		  =0007			 PS_USERSTYLE			      equ  7
+1   695		  =0008			 PS_ALTERNATE			      equ  8
+1   696		  =000F			 PS_STYLE_MASK			      equ  0Fh
+1   697		  =0000			 PS_ENDCAP_ROUND		      equ  0h
+1   698		  =0100			 PS_ENDCAP_SQUARE		      equ  100h
+1   699		  =0200			 PS_ENDCAP_FLAT			      equ  200h
+1   700		  =0F00			 PS_ENDCAP_MASK			      equ  0F00h
+1   701		  =0000			 PS_JOIN_ROUND			      equ  0h
+1   702		  =1000			 PS_JOIN_BEVEL			      equ  1000h
+1   703		  =2000			 PS_JOIN_MITER			      equ  2000h
+1   704		  =F000			 PS_JOIN_MASK			      equ  0F000h
+1   705		  =0000			 PS_COSMETIC			      equ  0h
+1   706		  =00010000		 PS_GEOMETRIC			      equ  10000h
+1   707		  =000F0000		 PS_TYPE_MASK			      equ  0F0000h
+1   708					 ;mem
+1   709		  =0000			 LMEM_FIXED			      equ  0h
+1   710		  =0002			 LMEM_MOVEABLE			      equ  2h
+1   711		  =0010			 LMEM_NOCOMPACT			      equ  10h
+1   712		  =0020			 LMEM_NODISCARD			      equ  20h
+1   713		  =0040			 LMEM_ZEROINIT			      equ  40h
+1   714		  =0080			 LMEM_MODIFY			      equ  80h
+1   715		  =0F00			 LMEM_DISCARDABLE		      equ  0F00h
+1   716		  =0F72			 LMEM_VALID_FLAGS		      equ  0F72h
+1   717		  =8000			 LMEM_INVALID_HANDLE		      equ  8000h
+1   718		  =0042			 LHND				      equ  LMEM_MOVEABLE + LMEM_ZEROINIT
+1   719		  =0040			 LPTR				      equ  LMEM_FIXED +	LMEM_ZEROINIT
+1   720					 ;file
+1   721		  =-0001		 HFILE_ERROR equ  -1
+1   722		  =0000			 OF_READ			      equ  0h
+1   723		  =0001			 OF_WRITE			      equ  1h
+1   724		  =0002			 OF_READWRITE			      equ  2h
+1   725		  =80000000		 GENERIC_READ			      equ  80000000h
+1   726		  =40000000		 GENERIC_WRITE			      equ  40000000h
+1   727		  =0001			 CREATE_NEW			      equ  1
+1   728		  =0002			 CREATE_ALWAYS			      equ  2
+1   729		  =0003			 OPEN_EXISTING			      equ  3
+1   730		  =0004			 OPEN_ALWAYS			      equ  4
+1   731		  =0001			 FILE_SHARE_READ		      equ  1h
+1   732		  =0002			 FILE_SHARE_WRITE		      equ  2h
+1   733		  =0001			 FILE_ATTRIBUTE_READONLY	      equ  1h
+1   734		  =0002			 FILE_ATTRIBUTE_HIDDEN		      equ  2h
+1   735		  =0004			 FILE_ATTRIBUTE_SYSTEM		      equ  4h
+1   736		  =0010			 FILE_ATTRIBUTE_DIRECTORY	      equ  10h
+1   737		  =0020			 FILE_ATTRIBUTE_ARCHIVE		      equ  20h
+1   738		  =0080			 FILE_ATTRIBUTE_NORMAL		      equ  80h
+1   739		  =0100			 FILE_ATTRIBUTE_TEMPORARY	      equ  100h
+1   740		  =0800			 FILE_ATTRIBUTE_COMPRESSED	      equ  800h
+1   741		  =0000			 FILE_BEGIN			      equ  0
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 14
+lz.asm
+
+
+
+1   742		  =0001			 FILE_CURRENT			      equ  1
+1   743		  =0002			 FILE_END			      equ  2
+1   744
+1   745		  =00080000		 OFN_EXPLORER		 equ  80000h
+1   746		  =0400			 OFN_EXTENSIONDIFFERENT	 equ  00000400h
+1   747		  =1000			 OFN_FILEMUSTEXIST	 equ  00001000h
+1   748		  =0004			 OFN_HIDEREADONLY	 equ  00000004h
+1   749		  =00200000		 OFN_LONGNAMES		 equ  00200000h
+1   750
+1   751		  =0002			 COLOR_ACTIVECAPTION		      equ  2
+1   752		  =0003			 COLOR_INACTIVECAPTION		      equ  3
+1   753		  =0004			 COLOR_MENU			      equ  4
+1   754		  =0005			 COLOR_WINDOW			      equ  5
+1   755		  =0006			 COLOR_WINDOWFRAME		      equ  6
+1   756		  =0007			 COLOR_MENUTEXT			      equ  7
+1   757		  =0008			 COLOR_WINDOWTEXT		      equ  8
+1   758
+1   759		  =0008			 VK_BACK			      equ  8h
+1   760		  =0003			 VK_CANCEL			      equ  3h
+1   761		  =0014			 VK_CAPITAL			      equ  14h
+1   762		  =000C			 VK_CLEAR			      equ  0Ch
+1   763		  =0011			 VK_CONTROL			      equ  11h
+1   764		  =002E			 VK_DELETE			      equ  2Eh
+1   765		  =0028			 VK_DOWN			      equ  28h
+1   766		  =0023			 VK_END				      equ  23h
+1   767		  =001B			 VK_ESCAPE			      equ  1Bh
+1   768		  =002B			 VK_EXECUTE			      equ  2Bh
+1   769		  =002F			 VK_HELP			      equ  2Fh
+1   770		  =0024			 VK_HOME			      equ  24h
+1   771		  =002D			 VK_INSERT			      equ  2Dh
+1   772		  =0001			 VK_LBUTTON			      equ  1h
+1   773		  =0025			 VK_LEFT			      equ  25h
+1   774		  =0004			 VK_MBUTTON			      equ  4h
+1   775		  =0012			 VK_MENU			      equ  12h
+1   776		  =0022			 VK_NEXT			      equ  22h
+1   777		  =0013			 VK_PAUSE			      equ  13h
+1   778		  =0022			 VK_PGDN			      equ  22h
+1   779		  =0021			 VK_PGUP			      equ  21h
+1   780		  =002A			 VK_PRINT			      equ  2Ah
+1   781		  =0021			 VK_PRIOR			      equ  21h
+1   782		  =0002			 VK_RBUTTON			      equ  2h
+1   783		  =000D			 VK_RETURN			      equ  0Dh
+1   784		  =0027			 VK_RIGHT			      equ  27h
+1   785		  =0029			 VK_SELECT			      equ  29h
+1   786		  =0010			 VK_SHIFT			      equ  10h
+1   787		  =002C			 VK_SNAPSHOT			      equ  2Ch
+1   788		  =0020			 VK_SPACE			      equ  20h
+1   789		  =0009			 VK_TAB				      equ  9h
+1   790		  =0026			 VK_UP				      equ  26h
+1   791		  =0060			 VK_NUMPAD0			      equ  60h
+1   792		  =0061			 VK_NUMPAD1			      equ  61h
+1   793		  =0062			 VK_NUMPAD2			      equ  62h
+1   794		  =0063			 VK_NUMPAD3			      equ  63h
+1   795		  =0064			 VK_NUMPAD4			      equ  64h
+1   796		  =0065			 VK_NUMPAD5			      equ  65h
+1   797		  =0066			 VK_NUMPAD6			      equ  66h
+1   798		  =0067			 VK_NUMPAD7			      equ  67h
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 15
+lz.asm
+
+
+
+1   799		  =0068			 VK_NUMPAD8			      equ  68h
+1   800		  =0069			 VK_NUMPAD9			      equ  69h
+1   801		  =006A			 VK_MULTIPLY			      equ  6Ah
+1   802		  =006B			 VK_ADD				      equ  6Bh
+1   803		  =006C			 VK_SEPARATOR			      equ  6Ch
+1   804		  =006D			 VK_SUBTRACT			      equ  6Dh
+1   805		  =006E			 VK_DECIMAL			      equ  6Eh
+1   806		  =006F			 VK_DIVIDE			      equ  6Fh
+1   807		  =0070			 VK_F1				      equ  70h
+1   808		  =0071			 VK_F2				      equ  71h
+1   809		  =0072			 VK_F3				      equ  72h
+1   810		  =0073			 VK_F4				      equ  73h
+1   811		  =0074			 VK_F5				      equ  74h
+1   812		  =0075			 VK_F6				      equ  75h
+1   813		  =0076			 VK_F7				      equ  76h
+1   814		  =0077			 VK_F8				      equ  77h
+1   815		  =0078			 VK_F9				      equ  78h
+1   816		  =0079			 VK_F10				      equ  79h
+1   817		  =007A			 VK_F11				      equ  7Ah
+1   818		  =007B			 VK_F12				      equ  7Bh
+1   819		  =007C			 VK_F13				      equ  7Ch
+1   820		  =007D			 VK_F14				      equ  7Dh
+1   821		  =007E			 VK_F15				      equ  7Eh
+1   822		  =007F			 VK_F16				      equ  7Fh
+1   823		  =0080			 VK_F17				      equ  80h
+1   824		  =0081			 VK_F18				      equ  81h
+1   825		  =0082			 VK_F19				      equ  82h
+1   826		  =0083			 VK_F20				      equ  83h
+1   827		  =0084			 VK_F21				      equ  84h
+1   828		  =0085			 VK_F22				      equ  85h
+1   829		  =0086			 VK_F23				      equ  86h
+1   830		  =0087			 VK_F24				      equ  87h
+1   831		  =0090			 VK_NUMLOCK			      equ  90h
+1   832		  =0091			 VK_SCROLL			      equ  91h
+1   833		  =00A0			 VK_LSHIFT			      equ  0A0h
+1   834		  =00A1			 VK_RSHIFT			      equ  0A1h
+1   835		  =00A2			 VK_LCONTROL			      equ  0A2h
+1   836		  =00A3			 VK_RCONTROL			      equ  0A3h
+1   837		  =00A4			 VK_LMENU			      equ  0A4h
+1   838		  =00A5			 VK_RMENU			      equ  0A5h
+1   839		  =00F6			 VK_ATTN			      equ  0F6h
+1   840		  =00F7			 VK_CRSEL			      equ  0F7h
+1   841		  =00F8			 VK_EXSEL			      equ  0F8h
+1   842		  =00F9			 VK_EREOF			      equ  0F9h
+1   843		  =00FA			 VK_PLAY			      equ  0FAh
+1   844		  =00FB			 VK_ZOOM			      equ  0FBh
+1   845		  =00FC			 VK_NONAME			      equ  0FCh
+1   846		  =00FD			 VK_PA1				      equ  0FDh
+1   847		  =00FE			 VK_OEM_CLEAR			      equ  0FEh
+1   848		  =0030			 VK_0						  equ  30h
+1   849		  =0031			 VK_1						  equ  31h
+1   850		  =0032			 VK_2						  equ  32h
+1   851		  =0033			 VK_3						  equ  33h
+1   852		  =0034			 VK_4						  equ  34h
+1   853		  =0035			 VK_5						  equ  35h
+1   854		  =0036			 VK_6						  equ  36h
+1   855		  =0037			 VK_7						  equ  37h
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 16
+lz.asm
+
+
+
+1   856		  =0038			 VK_8						  equ  38h
+1   857		  =0039			 VK_9						  equ  39h
+1   858		  =0041			 VK_A						  equ  41h
+1   859		  =0042			 VK_B						  equ  42h
+1   860		  =0043			 VK_C						  equ  43h
+1   861		  =0044			 VK_D						  equ  44h
+1   862		  =0045			 VK_E						  equ  45h
+1   863		  =0046			 VK_F						  equ  46h
+1   864		  =0047			 VK_G						  equ  47h
+1   865		  =0048			 VK_H						  equ  48h
+1   866		  =0049			 VK_I						  equ  49h
+1   867		  =004A			 VK_J						  equ  4Ah
+1   868		  =004B			 VK_K						  equ  4Bh
+1   869		  =004C			 VK_L						  equ  4Ch
+1   870		  =004D			 VK_M						  equ  4Dh
+1   871		  =004E			 VK_N						  equ  4Eh
+1   872		  =004F			 VK_O						  equ  4Fh
+1   873		  =0050			 VK_P						  equ  50h
+1   874		  =0051			 VK_Q						  equ  51h
+1   875		  =0052			 VK_R						  equ  52h
+1   876		  =0053			 VK_S						  equ  53h
+1   877		  =0054			 VK_T						  equ  54h
+1   878		  =0055			 VK_U						  equ  55h
+1   879		  =0056			 VK_V						  equ  56h
+1   880		  =0057			 VK_W						  equ  57h
+1   881		  =0058			 VK_X						  equ  58h
+1   882		  =0059			 VK_Y						  equ  59h
+1   883		  =005A			 VK_Z						  equ  5Ah
+1   884
+1   885		  =0001			 WS_EX_DLGMODALFRAME		      equ 1h
+1   886		  =0004			 WS_EX_NOPARENTNOTIFY		      equ 4h
+1   887		  =0008			 WS_EX_TOPMOST			      equ 8h
+1   888		  =0010			 WS_EX_ACCEPTFILES		      equ 10h
+1   889		  =0020			 WS_EX_TRANSPARENT		      equ 20h
+1   890		  =0040			 WS_EX_MDICHILD			      equ 00000040h
+1   891		  =0080			 WS_EX_TOOLWINDOW		      equ 00000080h
+1   892		  =0100			 WS_EX_WINDOWEDGE		      equ 00000100h
+1   893		  =0200			 WS_EX_CLIENTEDGE		      equ 00000200h
+1   894		  =0400			 WS_EX_CONTEXTHELP		      equ 00000400h
+1   895		  =1000			 WS_EX_RIGHT			      equ 00001000h
+1   896		  =0000			 WS_EX_LEFT			      equ 00000000h
+1   897		  =2000			 WS_EX_RTLREADING		      equ 00002000h
+1   898		  =0000			 WS_EX_LTRREADING		      equ 00000000h
+1   899		  =4000			 WS_EX_LEFTSCROLLBAR		      equ 00004000h
+1   900		  =0000			 WS_EX_RIGHTSCROLLBAR		      equ 00000000h
+1   901		  =00010000		 WS_EX_CONTROLPARENT		      equ 00010000h
+1   902		  =00020000		 WS_EX_STATICEDGE		      equ 00020000h
+1   903		  =00040000		 WS_EX_APPWINDOW		      equ 00040000h
+1   904
+    905					 extrn ExitProcess:proc
+    906					 extrn GetModuleHandleA:proc
+    907					 extrn DialogBoxParamA:proc
+    908					 extrn PostQuitMessage:proc
+    909					 extrn EndDialog:proc
+    910					 extrn SetScrollPos:proc
+    911					 extrn EnableScrollBar:proc
+    912					 extrn GetScrollRange:proc
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 17
+lz.asm
+
+
+
+    913					 extrn GetDlgItemTextA:proc
+    914					 extrn GetWindowRect:proc
+    915					 extrn ScrollWindowEx:proc
+    916					 extrn SetDlgItemTextA:proc
+    917					 extrn UpdateWindow:proc
+    918					 extrn LocalAlloc:proc
+    919					 ;;;;;;
+    920		  = dword ptr		 dwo equ <dword	ptr>
+    921					 include mmx32.inc
+1   922
+1   923					 ;//‡­ зҐ­Ёп ўв®а®Ј® Ў ©в  ¬ иЁ­­®Ј® д®а¬ в  MMX-Є®¬ ­¤
+1   924		  =0077			 _opc_emms	 equ	 77h
+1   925		  =006E			 _opc_movd_ld	 equ	 6eh
+1   926		  =007E			 _opc_movd_st	 equ	 7eh
+1   927		  =006F			 _opc_movq_ld	 equ	 6fh
+1   928		  =007F			 _opc_movq_st	 equ	 7fh
+1   929		  =006B			 _opc_packssdw	 equ	 6bh
+1   930		  =0063			 _opc_packsswb	 equ	 63h
+1   931		  =0067			 _opc_packuswb	 equ	 67h
+1   932		  =00FC			 _opc_paddb	 equ	 0fch
+1   933		  =00FE			 _opc_paddd	 equ	 0feh
+1   934		  =00EC			 _opc_paddsb	 equ	 0ech
+1   935		  =00ED			 _opc_paddsw	 equ	 0edh
+1   936		  =00DC			 _opc_paddusb	 equ	 0dch
+1   937		  =00DD			 _opc_paddusw	 equ	 0ddh
+1   938		  =00FD			 _opc_paddw	 equ	 0fdh
+1   939		  =00DB			 _opc_pand	 equ	 0dbh
+1   940		  =00DF			 _opc_pandn	 equ	 0dfh
+1   941		  =0074			 _opc_pcmpeqb	 equ	 74h
+1   942		  =0076			 _opc_pcmpeqd	 equ	 76h
+1   943		  =0075			 _opc_pcmpeqw	 equ	 75h
+1   944		  =0064			 _opc_pcmpgtb	 equ	 64h
+1   945		  =0066			 _opc_pcmpgtd	 equ	 66h
+1   946		  =0065			 _opc_pcmpgtw	 equ	 65h
+1   947		  =00F5			 _opc_pmaddwd	 equ	 0f5h
+1   948		  =00E5			 _opc_pmulhw	 equ	 0e5h
+1   949		  =00D5			 _opc_pmullw	 equ	 0d5h
+1   950		  =00EB			 _opc_por	 equ	 0ebh
+1   951		  =0072			 _opc_pshimd	 equ	 72h
+1   952		  =0073			 _opc_pshimq	 equ	 73h
+1   953		  =0071			 _opc_pshimw	 equ	 71h
+1   954		  =00F2			 _opc_pslld	 equ	 0f2h
+1   955		  =00F3			 _opc_psllq	 equ	 0f3h
+1   956		  =00F1			 _opc_psllw	 equ	 0f1h
+1   957		  =00E2			 _opc_psrad	 equ	 0e2h
+1   958		  =00E1			 _opc_psraw	 equ	 0e1h
+1   959		  =00D2			 _opc_psrld	 equ	 0d2h
+1   960		  =00D3			 _opc_psrlq	 equ	 0d3h
+1   961		  =00D1			 _opc_psrlw	 equ	 0d1h
+1   962		  =00F8			 _opc_psubb	 equ	 0f8h
+1   963		  =00FA			 _opc_psubd	 equ	 0fah
+1   964		  =00E8			 _opc_psubsb	 equ	 0e8h
+1   965		  =00E9			 _opc_psubsw	 equ	 0e9h
+1   966		  =00D8			 _opc_psubusb	 equ	 0d8h
+1   967		  =00D9			 _opc_psubusw	 equ	 0d9h
+1   968		  =00F9			 _opc_psubw	 equ	 0f9h
+1   969		  =0068			 _opc_punpckhbw	 equ	 68h
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 18
+lz.asm
+
+
+
+1   970		  =0069			 _opc_punpckhwd	 equ	 69h
+1   971		  =006A			 _opc_punpckhdq	 equ	 6ah
+1   972		  =0060			 _opc_punpcklbw	 equ	 60h
+1   973		  =0061			 _opc_punpcklwd	 equ	 61h
+1   974		  =0062			 _opc_punpckldq	 equ	 62h
+1   975		  =00EF			 _opc_pxor	 equ	 0efh
+1   976					 ;_opc_rdpmc		  equ	  33h
+1   977
+1   978		  = eax			 rmmx0	 equ	 <eax>
+1   979		  = ecx			 rmmx1	 equ	 <ecx>
+1   980		  = edx			 rmmx2	 equ	 <edx>
+1   981		  = ebx			 rmmx3	 equ	 <ebx>
+1   982		  = esp			 rmmx4	 equ	 <esp>
+1   983		  = ebp			 rmmx5	 equ	 <ebp>
+1   984		  = esi			 rmmx6	 equ	 <esi>
+1   985		  = edi			 rmmx7	 equ	 <edi>
+1   986
+1   987					 emms	 macro
+1   988						 db	 0fh
+1   989						 db	 _opc_emms
+1   990						 endm
+1   991
+1   992
+1   993					 movd	 macro	 dest:req,src:req
+1   994						 local	 pre,post
+1   995					 ideal
+1   996					 if (symtype dest) and 10h
+1   997					 pre:
+1   998						 xadd	 [src],dest
+1   999					 post:
+1  1000						 org	 pre+1
+1  1001						 db	 _opc_movd_ld
+1  1002						 org	 post
+1  1003					 else
+1  1004					 pre:
+1  1005						 xadd	 [dest],src
+1  1006					 post:
+1  1007						 org	 pre+1
+1  1008						 db	 _opc_movd_st
+1  1009						 org	 post
+1  1010					 endif
+1  1011					 masm
+1  1012						 endm
+1  1013
+1  1014					 movq	 macro	 dest:req,src:req
+1  1015						 local	 pre,post
+1  1016					 ideal
+1  1017					 if ((symtype dest) and	10h)
+1  1018					 movq_r_mr=1
+1  1019					 else
+1  1020					 movq_r_mr=0
+1  1021					 endif
+1  1022					 masm
+1  1023					 if movq_r_mr eq 1
+1  1024					 pre:
+1  1025						 xadd	 src,dest
+1  1026					 post:
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 19
+lz.asm
+
+
+
+1  1027						 org	 pre+1
+1  1028						 db	 _opc_movq_ld
+1  1029						 org	 post
+1  1030					 else
+1  1031					 display 'При использовании косвенной адресации	используйте односкобочную запись, к примеру:'
+1  1032					 display 'вместо [ebx][esi*4] используйте [ebx+esi*4]'
+1  1033					 pre:
+1  1034						 xadd	 dest,src
+1  1035					 post:
+1  1036						 org	 pre+1
+1  1037						 db	 _opc_movq_st
+1  1038						 org	 post
+1  1039					 endif
+1  1040						 endm
+1  1041
+1  1042					 packsswb	 macro	 dest:req,src:req
+1  1043						 local	 pre,post
+1  1044					 pre:
+1  1045						 xadd	 src,dest
+1  1046					 post:
+1  1047						 org	 pre+1
+1  1048						 db	 _opc_packsswb
+1  1049						 org	 post
+1  1050						 endm
+1  1051
+1  1052					 packssdw	 macro	 dest:req,src:req
+1  1053						 local	 pre,post
+1  1054					 pre:
+1  1055						 xadd	 src,dest
+1  1056					 post:
+1  1057						 org	 pre+1
+1  1058						 db	 _opc_packssdw
+1  1059						 org	 post
+1  1060						 endm
+1  1061
+1  1062					 packuswb	 macro	 dest:req,src:req
+1  1063						 local	 pre,post
+1  1064					 pre:
+1  1065						 xadd	 src,dest
+1  1066					 post:
+1  1067						 org	 pre+1
+1  1068						 db	 _opc_packuswb
+1  1069						 org	 post
+1  1070						 endm
+1  1071
+1  1072					 paddb	 macro	 dest:req,src:req
+1  1073						 local	 pre,post
+1  1074					 pre:
+1  1075						 xadd	 src,dest
+1  1076					 post:
+1  1077						 org	 pre+1
+1  1078						 db	 _opc_paddb
+1  1079						 org	 post
+1  1080						 endm
+1  1081
+1  1082					 paddw	 macro	 dest:req,src:req
+1  1083						 local	 pre,post
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 20
+lz.asm
+
+
+
+1  1084					 pre:
+1  1085						 xadd	 src,dest
+1  1086					 post:
+1  1087						 org	 pre+1
+1  1088						 db	 _opc_paddw
+1  1089						 org	 post
+1  1090						 endm
+1  1091
+1  1092					 paddd	 macro	 dest:req,src:req
+1  1093						 local	 pre,post
+1  1094					 pre:
+1  1095						 xadd	 src,dest
+1  1096					 post:
+1  1097						 org	 pre+1
+1  1098						 db	 _opc_paddd
+1  1099						 org	 post
+1  1100						 endm
+1  1101
+1  1102					 paddsb	 macro	 dest:req,src:req
+1  1103						 local	 pre,post
+1  1104					 pre:
+1  1105						 xadd	 src,dest
+1  1106					 post:
+1  1107						 org	 pre+1
+1  1108						 db	 _opc_paddsb
+1  1109						 org	 post
+1  1110						 endm
+1  1111
+1  1112					 paddsw	 macro	 dest:req,src:req
+1  1113						 local	 pre,post
+1  1114					 pre:
+1  1115						 xadd	 src,dest
+1  1116					 post:
+1  1117						 org	 pre+1
+1  1118						 db	 _opc_paddsw
+1  1119						 org	 post
+1  1120						 endm
+1  1121
+1  1122					 paddusb macro	 dest:req,src:req
+1  1123						 local	 pre,post
+1  1124					 pre:
+1  1125						 xadd	 src,dest
+1  1126					 post:
+1  1127						 org	 pre+1
+1  1128						 db	 _opc_paddusb
+1  1129						 org	 post
+1  1130						 endm
+1  1131
+1  1132					 paddusw macro	 dest:req,src:req
+1  1133						 local	 pre,post
+1  1134					 pre:
+1  1135						 xadd	 src,dest
+1  1136					 post:
+1  1137						 org	 pre+1
+1  1138						 db	 _opc_paddusw
+1  1139						 org	 post
+1  1140						 endm
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 21
+lz.asm
+
+
+
+1  1141
+1  1142					 pand	 macro	 dest:req,src:req
+1  1143						 local	 pre,post
+1  1144					 pre:
+1  1145						 xadd	 src,dest
+1  1146					 post:
+1  1147						 org	 pre+1
+1  1148						 db	 _opc_pand
+1  1149						 org	 post
+1  1150						 endm
+1  1151
+1  1152					 pandn	 macro	 dest:req,src:req
+1  1153						 local	 pre,post
+1  1154					 pre:
+1  1155						 xadd	 src,dest
+1  1156					 post:
+1  1157						 org	 pre+1
+1  1158						 db	 _opc_pandn
+1  1159						 org	 post
+1  1160						 endm
+1  1161
+1  1162					 pcmpeqb macro	 dest:req,src:req
+1  1163						 local	 pre,post
+1  1164					 pre:
+1  1165						 xadd	 src,dest
+1  1166					 post:
+1  1167						 org	 pre+1
+1  1168						 db	 _opc_pcmpeqb
+1  1169						 org	 post
+1  1170						 endm
+1  1171
+1  1172					 pcmpeqw macro	 dest:req,src:req
+1  1173						 local	 pre,post
+1  1174					 pre:
+1  1175						 xadd	 src,dest
+1  1176					 post:
+1  1177						 org	 pre+1
+1  1178						 db	 _opc_pcmpeqw
+1  1179						 org	 post
+1  1180						 endm
+1  1181
+1  1182					 pcmpeqd macro	 dest:req,src:req
+1  1183						 local	 pre,post
+1  1184					 pre:
+1  1185						 xadd	 src,dest
+1  1186					 post:
+1  1187						 org	 pre+1
+1  1188						 db	 _opc_pcmpeqd
+1  1189						 org	 post
+1  1190						 endm
+1  1191
+1  1192					 pcmpgtb	 macro	 dest:req,src:req
+1  1193						 local	 pre,post
+1  1194					 pre:
+1  1195						 xadd	 src,dest
+1  1196					 post:
+1  1197						 org	 pre+1
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 22
+lz.asm
+
+
+
+1  1198						 db	 _opc_pcmpgtb
+1  1199						 org	 post
+1  1200						 endm
+1  1201
+1  1202					 pcmpgtw	 macro	 dest:req,src:req
+1  1203						 local	 pre,post
+1  1204					 pre:
+1  1205						 xadd	 src,dest
+1  1206					 post:
+1  1207						 org	 pre+1
+1  1208						 db	 _opc_pcmpgtw
+1  1209						 org	 post
+1  1210						 endm
+1  1211
+1  1212					 pcmpgtd	 macro	 dest:req,src:req
+1  1213						 local	 pre,post
+1  1214					 pre:
+1  1215						 xadd	 src,dest
+1  1216					 post:
+1  1217						 org	 pre+1
+1  1218						 db	 _opc_pcmpgtd
+1  1219						 org	 post
+1  1220						 endm
+1  1221
+1  1222					 pmaddwd macro	 dest:req,src:req
+1  1223						 local	 pre,post
+1  1224					 pre:
+1  1225						 xadd	 src,dest
+1  1226					 post:
+1  1227						 org	 pre+1
+1  1228						 db	 _opc_pmaddwd
+1  1229						 org	 post
+1  1230						 endm
+1  1231
+1  1232					 pmulhw	 macro	 dest:req,src:req
+1  1233						 local	 pre,post
+1  1234					 pre:
+1  1235						 xadd	 src,dest
+1  1236					 post:
+1  1237						 org	 pre+1
+1  1238						 db	 _opc_pmulhw
+1  1239						 org	 post
+1  1240						 endm
+1  1241
+1  1242					 pmullw	 macro	 dest:req,src:req
+1  1243						 local	 pre,post
+1  1244					 pre:
+1  1245						 xadd	 src,dest
+1  1246					 post:
+1  1247						 org	 pre+1
+1  1248						 db	 _opc_pmullw
+1  1249						 org	 post
+1  1250						 endm
+1  1251
+1  1252					 por	 macro	 dest:req,src:req
+1  1253						 local	 pre,post
+1  1254					 pre:
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 23
+lz.asm
+
+
+
+1  1255						 xadd	 src,dest
+1  1256					 post:
+1  1257						 org	 pre+1
+1  1258						 db	 _opc_por
+1  1259						 org	 post
+1  1260						 endm
+1  1261
+1  1262					 psllw	 macro	 dest:req,src:req
+1  1263						 local	 pre,post
+1  1264					 ideal
+1  1265					 if (symtype src) and 04h
+1  1266					 ;if (.type(src)) and 04h
+1  1267					 pre:
+1  1268						 btr	 dest,src
+1  1269					 post:
+1  1270						 org	 pre+1
+1  1271						 db	 _opc_pshimw
+1  1272						 org	 post
+1  1273					 else
+1  1274					 pre:
+1  1275						 xadd	 src,dest
+1  1276					 post:
+1  1277						 org	 pre+1
+1  1278						 db	 _opc_psllw
+1  1279						 org	 post
+1  1280					 endif
+1  1281					 masm
+1  1282						 endm
+1  1283
+1  1284					 pslld	 macro	 dest:req,src:req
+1  1285						 local	 pre,post
+1  1286					 ideal
+1  1287					 if (symtype src) and 04h
+1  1288					 ;if (.type(src)) and 04h
+1  1289					 pre:
+1  1290						 btr	 dest,src
+1  1291					 post:
+1  1292						 org	 pre+1
+1  1293						 db	 _opc_pshimd
+1  1294						 org	 post
+1  1295					 else
+1  1296					 pre:
+1  1297						 xadd	 src,dest
+1  1298					 post:
+1  1299						 org	 pre+1
+1  1300						 db	 _opc_pslld
+1  1301						 org	 post
+1  1302					 endif
+1  1303					 masm
+1  1304						 endm
+1  1305
+1  1306					 psllq	 macro	 dest:req,src:req
+1  1307						 local	 pre,post
+1  1308					 ideal
+1  1309					 if (symtype src) and 04h
+1  1310					 ;if (.type(src)) and 04h
+1  1311					 pre:
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 24
+lz.asm
+
+
+
+1  1312						 btr	 dest,src
+1  1313					 post:
+1  1314						 org	 pre+1
+1  1315						 db	 _opc_pshimq
+1  1316						 org	 post
+1  1317					 else
+1  1318					 pre:
+1  1319						 xadd	 src,dest
+1  1320					 post:
+1  1321						 org	 pre+1
+1  1322						 db	 _opc_psllq
+1  1323						 org	 post
+1  1324					 endif
+1  1325					 masm
+1  1326						 endm
+1  1327
+1  1328					 psraw	 macro	 dest:req,src:req
+1  1329						 local	 pre,post
+1  1330					 ideal
+1  1331					 if (symtype src) and 04h
+1  1332					 ;if (.type(src)) and 04h
+1  1333					 pre:
+1  1334						 bt	 dest,src
+1  1335					 post:
+1  1336						 org	 pre+1
+1  1337						 db	 _opc_pshimw
+1  1338						 org	 post
+1  1339					 else
+1  1340					 pre:
+1  1341						 xadd	 src,dest
+1  1342					 post:
+1  1343						 org	 pre+1
+1  1344						 db	 _opc_psraw
+1  1345						 org	 post
+1  1346					 endif
+1  1347					 masm
+1  1348						 endm
+1  1349
+1  1350					 psrad	 macro	 dest:req,src:req
+1  1351						 local	 pre,post
+1  1352					 ideal
+1  1353					 if (symtype src) and 04h
+1  1354					 ;if (.type(src)) and 04h
+1  1355					 pre:
+1  1356						 bt	 dest,src
+1  1357					 post:
+1  1358						 org	 pre+1
+1  1359						 db	 _opc_pshimd
+1  1360						 org	 post
+1  1361					 else
+1  1362					 pre:
+1  1363						 xadd	 src,dest
+1  1364					 post:
+1  1365						 org	 pre+1
+1  1366						 db	 _opc_psrad
+1  1367						 org	 post
+1  1368					 endif
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 25
+lz.asm
+
+
+
+1  1369					 masm
+1  1370						 endm
+1  1371
+1  1372					 psrlw	 macro	 dest:req,src:req
+1  1373						 local	 pre,post
+1  1374					 ideal
+1  1375					 if (symtype src) and 04h
+1  1376					 ;if (.type(src)) and 04h
+1  1377					 pre:
+1  1378						 xadd	 dest,rmmx2
+1  1379						 db	 src
+1  1380					 post:
+1  1381						 org	 pre+1
+1  1382						 db	 _opc_pshimw
+1  1383						 org	 post
+1  1384					 else
+1  1385					 pre:
+1  1386						 xadd	 src,dest
+1  1387					 post:
+1  1388						 org	 pre+1
+1  1389						 db	 _opc_psrlw
+1  1390						 org	 post
+1  1391					 endif
+1  1392					 masm
+1  1393						 endm
+1  1394
+1  1395					 psrld	 macro	 dest:req,src:req
+1  1396						 local	 pre,post
+1  1397					 ideal
+1  1398					 if (symtype src) and 04h
+1  1399					 ;if (.type(src)) and 04h
+1  1400					 pre:
+1  1401						 xadd	 dest,rmmx2
+1  1402						 db	 src
+1  1403					 post:
+1  1404						 org	 pre+1
+1  1405						 db	 _opc_pshimd
+1  1406						 org	 post
+1  1407					 else
+1  1408					 pre:
+1  1409						 xadd	 src,dest
+1  1410					 post:
+1  1411						 org	 pre+1
+1  1412						 db	 _opc_psrld
+1  1413						 org	 post
+1  1414					 endif
+1  1415					 masm
+1  1416						 endm
+1  1417
+1  1418					 psrlq	 macro	 dest:req,src:req
+1  1419						 local	 pre,post
+1  1420					 ideal
+1  1421					 if (symtype src) and 04h
+1  1422					 ;if (.type(src)) and 04h
+1  1423					 pre:
+1  1424						 xadd	 dest,rmmx2
+1  1425						 db	 src
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 26
+lz.asm
+
+
+
+1  1426					 post:
+1  1427						 org	 pre+1
+1  1428						 db	 _opc_pshimq
+1  1429						 org	 post
+1  1430					 else
+1  1431					 pre:
+1  1432						 xadd	 src,dest
+1  1433					 post:
+1  1434						 org	 pre+1
+1  1435						 db	 _opc_psrlq
+1  1436						 org	 post
+1  1437					 endif
+1  1438					 masm
+1  1439						 endm
+1  1440
+1  1441					 psubb	 macro	 dest:req,src:req
+1  1442						 local	 pre,post
+1  1443					 pre:
+1  1444						 xadd	 src,dest
+1  1445					 post:
+1  1446						 org	 pre+1
+1  1447						 db	 _opc_psubb
+1  1448						 org	 post
+1  1449						 endm
+1  1450
+1  1451					 psubw	 macro	 dest:req,src:req
+1  1452						 local	 pre,post
+1  1453					 pre:
+1  1454						 xadd	 src,dest
+1  1455					 post:
+1  1456						 org	 pre+1
+1  1457						 db	 _opc_psubw
+1  1458						 org	 post
+1  1459						 endm
+1  1460
+1  1461					 psubd	 macro	 dest:req,src:req
+1  1462						 local	 pre,post
+1  1463					 pre:
+1  1464						 xadd	 src,dest
+1  1465					 post:
+1  1466						 org	 pre+1
+1  1467						 db	 _opc_psubd
+1  1468						 org	 post
+1  1469						 endm
+1  1470
+1  1471					 psubsb	 macro	 dest:req,src:req
+1  1472						 local	 pre,post
+1  1473					 pre:
+1  1474						 xadd	 src,dest
+1  1475					 post:
+1  1476						 org	 pre+1
+1  1477						 db	 _opc_psubsb
+1  1478						 org	 post
+1  1479						 endm
+1  1480
+1  1481					 psubsw	 macro	 dest:req,src:req
+1  1482						 local	 pre,post
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 27
+lz.asm
+
+
+
+1  1483					 pre:
+1  1484						 xadd	 src,dest
+1  1485					 post:
+1  1486						 org	 pre+1
+1  1487						 db	 _opc_psubsw
+1  1488						 org	 post
+1  1489						 endm
+1  1490
+1  1491					 psubusb macro	 dest:req,src:req
+1  1492						 local	 pre,post
+1  1493					 pre:
+1  1494						 xadd	 src,dest
+1  1495					 post:
+1  1496						 org	 pre+1
+1  1497						 db	 _opc_psubusb
+1  1498						 org	 post
+1  1499						 endm
+1  1500
+1  1501					 psubusw macro	 dest:req,src:req
+1  1502						 local	 pre,post
+1  1503					 pre:
+1  1504						 xadd	 src,dest
+1  1505					 post:
+1  1506						 org	 pre+1
+1  1507						 db	 _opc_psubusw
+1  1508						 org	 post
+1  1509						 endm
+1  1510
+1  1511					 punpckhbw	 macro	 dest:req,src:req
+1  1512						 local	 pre,post
+1  1513					 pre:
+1  1514						 xadd	 src,dest
+1  1515					 post:
+1  1516						 org	 pre+1
+1  1517						 db	 _opc_punpckhbw
+1  1518						 org	 post
+1  1519						 endm
+1  1520
+1  1521					 punpckhwd	 macro	 dest:req,src:req
+1  1522						 local	 pre,post
+1  1523					 pre:
+1  1524						 xadd	 src,dest
+1  1525					 post:
+1  1526						 org	 pre+1
+1  1527						 db	 _opc_punpckhwd
+1  1528						 org	 post
+1  1529						 endm
+1  1530
+1  1531					 punpckhdq	 macro	 dest:req,src:req
+1  1532						 local	 pre,post
+1  1533					 pre:
+1  1534						 xadd	 src,dest
+1  1535					 post:
+1  1536						 org	 pre+1
+1  1537						 db	 _opc_punpckhdq
+1  1538						 org	 post
+1  1539						 endm
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 28
+lz.asm
+
+
+
+1  1540
+1  1541					 punpcklbw	 macro	 dest:req,src:req
+1  1542						 local	 pre,post
+1  1543					 pre:
+1  1544						 xadd	 src,dest
+1  1545					 post:
+1  1546						 org	 pre+1
+1  1547						 db	 _opc_punpcklbw
+1  1548						 org	 post
+1  1549						 endm
+1  1550
+1  1551					 punpcklwd	 macro	 dest:req,src:req
+1  1552						 local	 pre,post
+1  1553					 pre:
+1  1554						 xadd	 src,dest
+1  1555					 post:
+1  1556						 org	 pre+1
+1  1557						 db	 _opc_punpcklwd
+1  1558						 org	 post
+1  1559						 endm
+1  1560
+1  1561					 punpckldq	 macro	 dest:req,src:req
+1  1562						 local	 pre,post
+1  1563					 pre:
+1  1564						 xadd	 src,dest
+1  1565					 post:
+1  1566						 org	 pre+1
+1  1567						 db	 _opc_punpckldq
+1  1568						 org	 post
+1  1569						 endm
+1  1570
+1  1571					 pxor	 macro	 dest:req,src:req
+1  1572						 local	 pre,post
+1  1573					 pre:
+1  1574						 xadd	 src,dest
+1  1575					 post:
+1  1576						 org	 pre+1
+1  1577						 db	 _opc_pxor
+1  1578						 org	 post
+1  1579						 endm
+   1580					 p0 macro
+   1581					 xor eax,eax
+   1582					 p eax
+   1583					 endm
+   1584					 rd1 macro
+   1585					 pushad
+   1586					 pushf
+   1587					 rdtsc
+   1588					 mov lo_,eax
+   1589					 mov hi_,edx
+   1590					 popf
+   1591					 popad
+   1592					 endm
+   1593
+   1594					 rd2 macro
+   1595					 local nonzz
+   1596					 pushad
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 29
+lz.asm
+
+
+
+   1597					 pushf
+   1598					 rdtsc
+   1599					 sub eax,lo_
+   1600					 sub edx,hi_
+   1601					 cmp nzakodir,04000h
+   1602					 jb nonzz
+   1603					 int 3
+   1604					 nonzz:
+   1605					 popf
+   1606					 popad
+   1607					 endm
+   1608
+   1609	00000000			 .data
+   1610	00000000  0000			 tag dw	0
+   1611	00000002  00000000		 fin_dics dd 0
+   1612	00000006  00000001		 max_str dd 1
+   1613	0000000A  00000000		 num_frase dd 0
+   1614	0000000E  00000000		 dics_top dd 0
+   1615	00000012  0000000F		 len_win dd 15
+   1616	00000016  0000EA60		 SZ_DIC	dd 60000
+   1617	0000001A  00000000		 window	dd 0
+   1618	0000001E  31 2E	74 78 74 00	 f1 db '1.txt',0
+   1619	00000024  31 5F	2E 74 78 74 00	 f2 db '1_.txt',0
+   1620	0000002B  00000000		 hfd dd	0
+   1621	0000002F  00000000		 hfs dd	0
+   1622	00000033  00			 fex db	0
+   1623	00000034  00000000		 hmem dd 0
+   1624	00000038  00000000		 hmemf dd 0 ;байты  исх.файла
+   1625	0000003C  00000000		 hdics dd 0
+   1626	00000040  00000000		 hpart dd 0
+   1627	00000044  00000000		 sz_file_s dd 0	;size of src file
+   1628	00000048  00000000		 rlo dd	0
+   1629	0000004C  00000000		 rhi dd	0
+   1630	00000050  00000000		 lo_ dd	0
+   1631	00000054  00000000		 hi_ dd	0
+   1632	00000058  00000000		 hdic dd 0
+   1633	0000005C  00000002		 nsrc dd 2 ;номер исх. фразы
+   1634	00000060  00000000		 nzakodir dd 0
+   1635	00000064  00			 s db 0	;symbol	after n	in zakodir_infe
+   1636	00000065  00000000		 fin_edi dd 0
+   1637	00000069  00000000		 fin_dic dd 0 ;ptr eof_dic
+   1638	0000006D  00000002		 num_frases dd 2 ;число	просмотренных фраз
+   1639					 extrn OpenFile:proc
+   1640					 ;esi=of src_file
+   1641					 ;edi=of dst_file
+   1642	00000071  3F 3F	3F 5F 5A 69 70+	 ms1 db	'???_Zip(Y)_or_Unzip(N)_???',0
+   1643		  28 59	29 5F 6F 72 5F+
+   1644		  55 6E	7A 69 70 28 4E+
+   1645		  29 5F	3F 3F 3F 00
+   1646	0000008C  00			 uz db 0
+   1647	0000008D  00000000		 dum1 dd 0
+   1648	00000091  00000000		 dic_top dd 0
+   1649					 rdtsc macro
+   1650					 db 0fh,31h
+   1651					 endm
+   1652	00000095			 .code
+   1653	00000000			 m1:
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 30
+lz.asm
+
+
+
+   1654	00000000  EB 2E	90 90 90	 jmp nocmd
+   1655					 extrn GetCommandLineA:proc
+   1656	00000005  E8 00000000e		 call GetCommandLineA
+   1657					 ;/len_win,len_dic
+   1658	0000000A  8B F8			 mov edi,eax
+   1659	0000000C  FC			 cld
+   1660	0000000D  B0 2C			 mov al,','
+   1661	0000000F  F2> AE		 repne scasb
+   1662	00000011  B1 2F			 mov cl,'/'
+   1663	00000013  E8 00000181		 call conv
+   1664					 p ebp
+**Error** lz.asm(103) Illegal instruction
+   1665	00000018  33 C0			 xor eax,eax
+   1666	0000001A  FC			 cld
+   1667	0000001B  F2> AE		 repne scasb
+   1668	0000001D  B1 2C			 mov cl,','
+   1669	0000001F  E8 00000175		 call conv
+   1670	00000024  89 2D	00000016r	 mov SZ_DIC,ebp
+   1671	0000002A  8F 05	00000012r	 pop len_win
+   1672	00000030			 nocmd:
+   1673	00000030  8B 35	00000000	 mov esi,of f1
+**Error** lz.asm(112) Undefined	symbol:	OF
+   1674	00000036  8B 3D	00000000	 mov edi,of f2
+**Error** lz.asm(113) Undefined	symbol:	OF
+   1675					 p MB_YESNO
+**Error** lz.asm(114) Illegal instruction
+   1676					 p of ms1
+**Error** lz.asm(115) Illegal instruction
+   1677					 p [esp]
+**Error** lz.asm(116) Illegal instruction
+   1678					 p0
+1  1679	0000003C  33 C0			 xor eax,eax
+   1680	0000003E  E8 00000000e		 call MessageBoxA
+   1681	00000043  83 F8	06		 cmp eax,IDYES
+   1682	00000046  74 0D	90 90 90 90	 je ggo
+   1683	0000004C  C6 05	0000008Cr 01	 mov uz,1
+   1684	00000053  87 FE			 xchg edi,esi
+   1685	00000055			 ggo:
+   1686	00000055  8B EC			 mov ebp,esp
+   1687	00000057  81 EC	00000100	 sub esp,100h
+   1688	0000005D  8B C4			 mov eax,esp
+   1689					 p OF_READ
+**Error** lz.asm(127) Illegal instruction
+   1690					 p eax
+**Error** lz.asm(128) Illegal instruction
+   1691					 p esi
+**Error** lz.asm(129) Illegal instruction
+   1692	0000005F  E8 00000000e		 call OpenFile
+   1693	00000064  A3 0000002Fr		 mov hfs,eax
+   1694	00000069  40			 inc eax
+   1695	0000006A  75 1E	90 90 90 90	 jnz j1
+   1696	00000070			 exit:
+   1697	00000070  8B E5			 mov esp,ebp
+   1698	00000072			 exit1:
+   1699					 p hmem
+**Error** lz.asm(137) Illegal instruction
+   1700					 extrn LocalFree:proc
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 31
+lz.asm
+
+
+
+   1701	00000072  E8 00000000e		 call LocalFree
+   1702					 p hmemf
+**Error** lz.asm(140) Illegal instruction
+   1703	00000077  E8 00000000e		 call LocalFree
+   1704					 p MB_OK
+**Error** lz.asm(142) Illegal instruction
+   1705					 p of f1
+**Error** lz.asm(143) Illegal instruction
+   1706					 p [esp]
+**Error** lz.asm(144) Illegal instruction
+   1707					 p0
+1  1708	0000007C  33 C0			 xor eax,eax
+   1709					 extrn MessageBoxA:proc
+   1710	0000007E  E8 00000000e		 call MessageBoxA
+   1711					 p0
+1  1712	00000083  33 C0			 xor eax,eax
+   1713	00000085  E8 00000000e		 call ExitProcess
+   1714					 ;;;;;
+   1715	0000008A			 j1:
+   1716	0000008A  48			 dec eax
+   1717					 p eax
+**Error** lz.asm(153) Illegal instruction
+   1718					 p esp
+**Error** lz.asm(154) Illegal instruction
+   1719					 p eax
+**Error** lz.asm(155) Illegal instruction
+   1720					 extrn GetFileSize:proc
+   1721	0000008B  E8 00000000e		 call GetFileSize
+   1722	00000090  59			 pop ecx
+   1723	00000091  67| E3 02		 jcxz j2
+   1724	00000094  EB DA			 jmp exit
+   1725	00000096			 j2:
+   1726					 p eax
+**Error** lz.asm(162) Illegal instruction
+   1727	00000096  A3 00000044r		 mov sz_file_s,eax
+   1728					 p LMEM_ZEROINIT
+**Error** lz.asm(164) Illegal instruction
+   1729	0000009B  E8 00000000e		 call LocalAlloc
+   1730	000000A0  A3 00000038r		 mov hmemf,eax
+   1731	000000A5  48			 dec eax
+   1732	000000A6  78 C8			 js  exit
+   1733	000000A8  40			 inc eax
+   1734	000000A9  33 DB			 xor ebx,ebx
+   1735					 p ebx
+**Error** lz.asm(171) Illegal instruction
+   1736	000000AB  8B D4			 mov edx,esp
+   1737					 p ebx
+**Error** lz.asm(173) Illegal instruction
+   1738					 p edx
+**Error** lz.asm(174) Illegal instruction
+   1739					 p sz_file_s ;sz_file
+**Error** lz.asm(175) Illegal instruction
+   1740					 p eax
+**Error** lz.asm(176) Illegal instruction
+   1741					 p hfs
+**Error** lz.asm(177) Illegal instruction
+   1742					 extrn	ReadFile:proc
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 32
+lz.asm
+
+
+
+   1743	000000AD  E8 00000000e		 call  ReadFile
+   1744	000000B2  5B			 pop ebx
+   1745	000000B3  48			 dec eax
+   1746	000000B4  78 BA			 js exit
+   1747	000000B6  8B 35	00000038r	 mov esi,hmemf
+   1748	000000BC  FC			 cld
+   1749	000000BD  AD			 lodsd
+   1750	000000BE  80 3D	0000008Cr 01	 cmp uz,1
+   1751	000000C5  75 09	90 90 90 90	 jne nnn
+   1752	000000CB  A3 00000044r		 mov sz_file_s,eax
+   1753	000000D0			 nnn:
+   1754					 p0
+1  1755	000000D0  33 C0			 xor eax,eax
+   1756					 p FILE_ATTRIBUTE_NORMAL
+**Error** lz.asm(191) Illegal instruction
+   1757					 p CREATE_ALWAYS
+**Error** lz.asm(192) Illegal instruction
+   1758					 p eax
+**Error** lz.asm(193) Illegal instruction
+   1759					 p eax
+**Error** lz.asm(194) Illegal instruction
+   1760					 p GENERIC_WRITE+GENERIC_READ
+**Error** lz.asm(195) Illegal instruction
+   1761					 p edi
+**Error** lz.asm(196) Illegal instruction
+   1762					 extrn	CreateFileA:proc
+   1763	000000D2  E8 00000000e		 call  CreateFileA
+   1764	000000D7  A3 0000002Br		 mov hfd,eax
+   1765	000000DC  40			 inc eax
+   1766	000000DD  74 91			 jz exit
+   1767					 extrn	GetSystemInfo:proc
+   1768	000000DF  A1 00000016r		 mov eax,SZ_DIC
+   1769	000000E4  C1 E0	02		 shl eax,2
+   1770	000000E7  03 05	00000044r	 add eax,sz_file_s
+   1771	000000ED  8B 1D	00000012r	 mov ebx,len_win
+   1772	000000F3  C1 E3	02		 shl ebx,2
+   1773	000000F6  03 C3			 add eax,ebx
+   1774					 p eax ;szdic*3+len_win*4+sz
+**Error** lz.asm(209) Illegal instruction
+   1775					 p LMEM_ZEROINIT
+**Error** lz.asm(210) Illegal instruction
+   1776	000000F8  E8 00000000e		 call LocalAlloc
+   1777	000000FD  A3 00000034r		 mov hmem,eax
+   1778	00000102  03 05	00000044r	 add eax,sz_file_s
+   1779	00000108  A3 00000058r		 mov hdic,eax
+   1780	0000010D  03 05	00000016r	 add eax,SZ_DIC
+   1781	00000113  A3 0000003Cr		 mov hdics,eax
+   1782	00000118  03 05	00000016r	 add eax,SZ_DIC
+   1783	0000011E  03 05	00000016r	 add eax,SZ_DIC
+   1784	00000124  03 05	00000016r	 add eax,SZ_DIC
+   1785	0000012A  A3 00000040r		 mov hpart,eax
+   1786					 p hdics
+**Error** lz.asm(221) Illegal instruction
+   1787	0000012F  8F 00			 pop [eax]
+*Warning* lz.asm(222) Argument needs type override
+   1788	00000131  48			 dec eax
+   1789	00000132  0F 88	FFFFFF38	 js exit
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 33
+lz.asm
+
+
+
+   1790	00000138  8B E5			 mov esp,ebp
+   1791	0000013A			 go:
+   1792	0000013A  0F 31			 db 0fh,31h
+   1793	0000013C  89 15	0000004Cr	 mov rhi,edx
+   1794	00000142  A3 00000048r		 mov rlo,eax
+   1795	00000147  E8 00000078		 call lz78 ;GOOOOOOOOOOOOOOOOOOOOOOOOOOO
+   1796	0000014C  0F 31			 db 0fh,31h
+   1797	0000014E  2B 15	0000004Cr	 sub edx,rhi
+   1798	00000154  2B 05	00000048r	 sub eax,rlo
+   1799	0000015A  8B 3D	00000000	 mov edi,of f1
+**Error** lz.asm(234) Undefined	symbol:	OF
+   1800	00000160  B9 00000008		 mov ecx,8
+   1801					 p ecx
+**Error** lz.asm(236) Illegal instruction
+   1802	00000165  92			 xchg eax,edx
+   1803	00000166  E8 00000013		 call xl1
+   1804	0000016B  B0 3A			 mov al,':'
+   1805	0000016D  AA			 stosb
+   1806	0000016E  8B C2			 mov eax,edx
+   1807	00000170  59			 pop ecx
+   1808	00000171  E8 00000008		 call xl1
+   1809	00000176  33 C0			 xor eax,eax
+   1810	00000178  AA			 stosb
+   1811	00000179  E9 FFFFFEF4		 jmp exit1
+   1812	0000017E			 xl1:
+   1813	0000017E  C1 C0	04		 rol eax,4
+   1814					 p eax
+**Error** lz.asm(249) Illegal instruction
+   1815	00000181  66| C1 E0 04		 shl ax,4
+   1816	00000185  C0 E8	04		 shr al,4
+   1817	00000188  04 30			 add al,30h
+   1818	0000018A  3C 39			 cmp al,39h
+   1819	0000018C  76 06	90 90 90 90	 jbe x1
+   1820	00000192  04 07			 add al,7
+   1821	00000194			 x1:
+   1822	00000194  AA			 stosb
+   1823	00000195  58			 pop eax
+   1824	00000196  E2 E6			 loop xl1
+   1825	00000198  C3			 ret
+   1826					 ;;;;;;;;;;
+   1827
+   1828
+   1829	00000199			 conv:
+   1830	00000199  8B F7			 mov esi,edi
+   1831	0000019B  4E			 dec esi
+   1832	0000019C  4E			 dec esi
+   1833	0000019D  33 C0			 xor eax,eax
+   1834	0000019F  33 DB			 xor ebx,ebx
+   1835	000001A1  33 ED			 xor ebp,ebp
+   1836	000001A3  43			 inc ebx
+   1837	000001A4  FD			 std
+   1838	000001A5			 nxc0:
+   1839	000001A5  AC			 lodsb
+   1840	000001A6  3A C1			 cmp al,cl
+   1841	000001A8  74 19	90 90 90 90	 je nxc
+   1842	000001AE  2C 30			 sub al,30h
+   1843	000001B0  3C 09			 cmp al,9
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 34
+lz.asm
+
+
+
+   1844	000001B2  76 06	90 90 90 90	 jbe nxc1
+   1845	000001B8  2C 07			 sub al,7
+   1846	000001BA			 nxc1:
+   1847	000001BA  F7 EB			 imul ebx
+   1848	000001BC  03 E8			 add ebp,eax
+   1849	000001BE  6B DB	0A		 imul ebx,ebx,10
+   1850	000001C1  EB E2			 jmp nxc0
+   1851	000001C3			 nxc:
+   1852	000001C3  C3			 ret
+   1853
+   1854
+   1855
+   1856
+   1857					 ;;;;;;;;;;;;;;;;;;
+   1858	000001C4			 lz78:		 ;в конце исход	файла в	памяти:	0
+   1859					 ;len_max_sovpad_frasa dd 0 ;=rmmx0
+   1860					 ;cur_buf dd 0 ;rmmx1
+   1861					 ;num_last_sovpad_frase	dd 0 ;rmmx2
+   1862					 emms
+1  1863	000001C4  0F				 db	 0fh
+1  1864	000001C5  77				 db	 _opc_emms
+   1865	000001C6  80 3D	0000008Cr 00	 cmp uz,0
+   1866	000001CD  74 1A	90 90 90 90	 je uz0
+   1867	000001D3  E8 0000043B		 call unpack
+   1868	000001D8  8B 2D	00000034r	 mov ebp,hmem
+   1869	000001DE  03 2D	00000044r	 add ebp,sz_file_s
+   1870	000001E4  E9 0000041C		 jmp exlz
+   1871	000001E9			 uz0:
+   1872					 p hdics
+**Error** lz.asm(305) Illegal instruction
+   1873	000001E9  8F 05	0000000Er	 pop  dics_top
+   1874					 p hdic
+**Error** lz.asm(307) Illegal instruction
+   1875	000001EF  8F 05	00000091r	 pop dic_top
+   1876	000001F5  A1 00000058r		 mov eax,hdic
+   1877	000001FA  03 05	00000016r	 add eax,SZ_DIC
+   1878	00000200  A3 00000069r		 mov fin_dic,eax
+   1879	00000205  03 05	00000016r	 add eax,SZ_DIC
+   1880	0000020B  03 05	00000016r	 add eax,SZ_DIC
+   1881	00000211  03 05	00000016r	 add eax,SZ_DIC
+   1882	00000217  A3 00000002r		 mov fin_dics,eax
+   1883	0000021C  A1 00000038r		 mov eax,hmemf
+   1884	00000221  03 05	00000044r	 add eax,sz_file_s
+   1885	00000227  A3 00000065r		 mov fin_edi,eax
+   1886	0000022C  8B 2D	00000034r	 mov ebp,hmem ;dst
+   1887					 p sz_file_s
+**Error** lz.asm(320) Illegal instruction
+   1888	00000232  8F 45	00		 pop [ebp]
+*Warning* lz.asm(321) Argument needs type override
+   1889	00000235  83 C5	04		 add ebp,4
+   1890	00000238  8B 1D	00000058r	 mov ebx,hdic ;dic ;dw len_fr|fr...
+   1891	0000023E  8B 35	00000038r	 mov esi,hmemf ;src=buffer
+   1892					 ;movd rmmx1,esi
+   1893	00000244  0F 6E	CE		 db 0fh,6eh,0ceh
+   1894	00000247  FC			 cld
+   1895	00000248			 goo:
+   1896	00000248  33 C0			 xor eax,eax
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 35
+lz.asm
+
+
+
+   1897	0000024A  40			 inc eax
+   1898					 ;movd rmmx0,eax
+   1899	0000024B  0F 6E	C0		 db 0fh,6eh,0c0h
+   1900	0000024E  40			 inc eax
+   1901					 ;movd rmmx2,eax
+   1902	0000024F  0F 6E	D0		 db 0fh,6eh,0d0h
+   1903					 ;
+   1904	00000252  8B FB			 mov edi,ebx
+   1905	00000254  3B 35	00000065r	 cmp esi,fin_edi
+   1906	0000025A  72 20	90 90 90 90	 jb jne__0
+   1907	00000260  8B 0D	00000060r	 mov ecx,nzakodir
+   1908	00000266  0F BD	C9		 db 0fh,0bdh,0c9h
+   1909	00000269  C1 E9	03		 shr ecx,3
+   1910	0000026C  41			 inc ecx
+   1911	0000026D  33 C0			 xor eax,eax
+   1912	0000026F  33 DB			 xor ebx,ebx
+   1913	00000271  8B FD			 mov edi,ebp
+   1914	00000273  F3> AA		 rep stosb
+   1915	00000275  8B EF			 mov ebp,edi
+   1916	00000277			 exittt:
+   1917	00000277  E9 00000389		 jmp exlz
+   1918	0000027C			 jne__0:
+   1919	0000027C  0F 7E	CE		 db 0fh,7eh,0ceh ;movd esi,rmmx1
+   1920					 p len_win
+**Error** lz.asm(353) Illegal instruction
+   1921	0000027F  8F 05	0000001Ar	 pop window
+   1922					 ;hdics: dw len;dd off in hdic;	dd num_fr
+   1923	00000285  8B DE			 mov ebx,esi
+   1924	00000287  C6 05	00000033r 00	 mov fex,0
+   1925					 ;;;;;;;;;******************
+   1926	0000028E			 fnd:
+   1927					 ;int 3
+   1928					 ;rd1
+   1929	0000028E  80 3D	00000033r 01	 cmp fex,1
+   1930	00000295  74 E0			 je exittt
+   1931					 p ebp ;hmem
+**Error** lz.asm(364) Illegal instruction
+   1932	00000297  8B 1D	00000006r	 mov ebx,max_str
+   1933	0000029D  43			 inc ebx
+   1934	0000029E  3B 1D	0000001Ar	 cmp ebx,window
+   1935	000002A4  76 12	90 90 90 90	 jbe  jbem
+   1936					 ;
+   1937	000002AA  8B 1D	0000001Ar	 mov ebx,window
+   1938	000002B0  4B			 dec ebx
+   1939	000002B1  89 1D	00000006r	 mov max_str,ebx
+   1940	000002B7  43			 inc ebx
+   1941	000002B8			 jbem:
+   1942	000002B8  4B			 dec ebx
+   1943	000002B9			 fgo:
+   1944					 ;int 3
+   1945	000002B9  A1 00000091r		 mov eax,dic_top
+   1946	000002BE  03 05	0000001Ar	 add eax,window
+   1947	000002C4  40			 inc eax
+   1948	000002C5  40			 inc eax
+   1949	000002C6  2B 05	00000058r	 sub eax,hdic
+   1950	000002CC  8B C8			 mov ecx,eax
+   1951	000002CE  A1 0000000Er		 mov eax,dics_top
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 36
+lz.asm
+
+
+
+   1952	000002D3  83 C0	0C		 add eax,11+1
+   1953	000002D6  2B 05	0000003Cr	 sub eax,hdics
+   1954	000002DC  3B 0D	00000016r	 cmp ecx,SZ_DIC
+   1955	000002E2  72 5C	90 90 90 90	 jb jb999
+   1956					 ;int 3
+   1957					 p hdic
+**Error** lz.asm(390) Illegal instruction
+   1958	000002E8  8F 05	00000091r	 pop dic_top
+   1959	000002EE  C7 05	00000006r     +	 mov max_str,1
+   1960		  00000001
+   1961	000002F8  0F 73	F4 64		 db 0fh,73h,0F4h,64h ;psllq rmmx4,64
+   1962					 p hdics
+**Error** lz.asm(394) Illegal instruction
+   1963	000002FC  8F 05	0000000Er	 pop dics_top
+   1964	00000302  C1 E9	05		 shr ecx,5
+   1965	00000305  41			 inc ecx
+   1966	00000306  8B 3D	00000058r	 mov edi,hdic
+   1967	0000030C  E8 000003BD		 call cls
+   1968	00000311  8B 3D	0000003Cr	 mov edi,hdics
+   1969	00000317  8B C8			 mov ecx,eax
+   1970	00000319  C1 E9	05		 shr ecx,5
+   1971	0000031C  41			 inc ecx
+   1972	0000031D  E8 000003AC		 call cls
+   1973	00000322  8B 0D	00000012r	 mov ecx,len_win
+   1974	00000328  C1 E9	03		 shr ecx,3
+   1975	0000032B  41			 inc ecx
+   1976	0000032C  8B 3D	00000040r	 mov edi,hpart
+   1977	00000332  A1 0000003Cr		 mov eax,hdics
+   1978	00000337  AB			 stosd
+   1979	00000338  E8 00000391		 call cls
+   1980	0000033D  33 DB			 xor ebx,ebx
+   1981	0000033F  43			 inc ebx
+   1982	00000340			 jb999:
+   1983	00000340  33 D2			 xor edx,edx
+   1984	00000342  8B CB			 mov ecx,ebx
+   1985	00000344  0F 7E	CE		 db  0fh,7eh,0ceh ;movd	esi,rmmx1
+   1986	00000347  33 ED			 xor ebp,ebp
+   1987					 ;int 3
+   1988	00000349			 lo1:			 ;CRC=sum_db
+   1989	00000349  33 C0			 xor eax,eax
+   1990	0000034B  AC			 lodsb
+   1991	0000034C  66| 03 D0		 add dx,ax
+   1992	0000034F  66| D1 C2		 rol dx,1
+   1993	00000352  49			 dec ecx
+   1994	00000353  74 11	90 90 90 90	 jz lo2
+   1995	00000359  AC			 lodsb
+   1996	0000035A  C1 E0	08		 shl eax,8
+   1997	0000035D  66| 03 D0		 add dx,ax
+   1998	00000360  66| D1 C2		 rol dx,1
+   1999	00000363  49			 dec ecx
+   2000	00000364  75 E3			 jnz lo1
+   2001	00000366			 lo2:
+   2002	00000366  66| 89 15 00000000r	 mov tag,dx
+   2003	0000036D  8B D6			 mov edx,esi ;eof_window
+   2004	0000036F  4A			 dec edx
+   2005	00000370  8B F3			 mov esi,ebx
+   2006	00000372  4E			 dec esi
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 37
+lz.asm
+
+
+
+   2007	00000373  C1 E6	02		 shl esi,2
+   2008	00000376  03 35	00000040r	 add esi,hpart ;ptr sub-massives
+   2009	0000037C  AD			 lodsd
+   2010	0000037D  8B F0			 mov esi,eax
+   2011					 ;rd2
+   2012					 ;rd1
+   2013					 ;int 3
+   2014	0000037F  8B 0D	0000000Er	 mov ecx,dics_top
+   2015	00000385  8B FE			 mov edi,esi
+   2016	00000387  66| A1 00000000r	 mov ax,tag
+   2017	0000038D  C1 C0	10		 rol eax,16
+   2018	00000390  66| 8B C3		 mov ax,bx
+   2019	00000393  8B EF			 mov ebp,edi
+   2020	00000395			 sc2:
+   2021	00000395  AF			 scasd
+   2022	00000396  74 52	90 90 90 90	 je sc1
+   2023	0000039C			 corr:
+   2024	0000039C  66| 39 47 FC		 cmp word ptr [edi-4],ax
+   2025	000003A0  75 14	90 90 90 90	 jne nxsc
+   2026	000003A6			 nosc:
+   2027	000003A6  83 C7	08		 add edi,8
+   2028	000003A9  3B 3D	0000000Er	 cmp edi,dics_top
+   2029	000003AF  72 E4			 jb sc2
+   2030	000003B1  E9 0000019D		 jmp  fndex_1
+   2031	000003B6			 nxsc:
+   2032	000003B6  48			 dec eax
+   2033	000003B7  C1 C0	10		 rol eax,16
+   2034	000003BA  83 EF	04		 sub edi,4
+   2035	000003BD  8B EF			 mov ebp,edi; =начало подмассива
+   2036						     ; длиной элем.=ax=bx
+   2037	000003BF  33 C9			 xor ecx,ecx
+   2038	000003C1  66| D1 C8		 ror ax,1
+   2039	000003C4  8A 0A			 mov cl,byte ptr [edx]
+   2040	000003C6  F7 C3	00000001	 test ebx,1
+   2041	000003CC  75 07	90 90 90 90	 jnz ebx0
+   2042	000003D2  C1 E1	08		 shl ecx,8
+   2043	000003D5			 ebx0:
+   2044	000003D5  66| 2B C1		 sub ax,cx
+   2045	000003D8  66| A3 00000000r	 mov tag,ax
+   2046	000003DE  C1 C0	10		 rol eax,16
+   2047	000003E1  4A			 dec edx
+   2048	000003E2  4B			 dec ebx
+   2049	000003E3  75 B0			 jnz sc2
+   2050	000003E5  E9 00000169		 jmp fndex_1
+   2051	000003EA			 sc1:
+   2052					 ;;;;;;;;;;;;;;FNDO
+   2053	000003EA			 ebpnz:
+   2054	000003EA  33 C9			 xor ecx,ecx
+   2055	000003EC  66| 8B CB		 mov cx,bx
+   2056					 p eax
+**Error** lz.asm(488) Illegal instruction
+   2057					 p edi
+**Error** lz.asm(489) Illegal instruction
+   2058	000003EF  8B F7			 mov esi,edi
+   2059	000003F1  AD			 lodsd
+   2060	000003F2  8B F8			 mov edi,eax
+   2061	000003F4  AD			 lodsd
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 38
+lz.asm
+
+
+
+   2062	000003F5  A3 0000000Ar		 mov num_frase,eax
+   2063	000003FA  47			 inc edi
+   2064	000003FB  47			 inc edi
+   2065	000003FC  0F 7E	CE		 db 0fh,7eh,0ceh ;movd esi,rmmx1
+   2066					 p ebx
+**Error** lz.asm(498) Illegal instruction
+   2067	000003FF  8B D9			 mov ebx,ecx
+   2068	00000401  F3> A6		 repe cmpsb
+   2069	00000403  8B C6			 mov eax,esi
+   2070	00000405  59			 pop ecx
+   2071	00000406  5F			 pop edi
+   2072	00000407  74 09	90 90 90 90	 jz equ_
+   2073	0000040D  58			 pop eax
+   2074	0000040E  8B D9			 mov ebx,ecx
+   2075	00000410  EB 94			 jmp nosc
+   2076					 ;;;;;;+++++++++++
+   2077	00000412			 equ_:
+   2078					 ;rd2
+   2079					 ;rd1
+   2080					 ;int 3
+   2081	00000412  5E			 pop esi
+   2082					 p eax
+**Error** lz.asm(514) Illegal instruction
+   2083					 ;int 3
+   2084	00000413  8B 35	0000000Er	 mov esi,dics_top
+   2085	00000419  8B CE			 mov ecx,esi
+   2086	0000041B  2B CD			 sub ecx,ebp
+   2087	0000041D  41			 inc ecx
+   2088	0000041E  8D 7E	0C		 lea edi,[esi+6+4+2]
+   2089	00000421  89 3D	0000000Er	 mov dics_top,edi
+   2090	00000427  83 EF	08		 sub edi,8
+   2091	0000042A  83 EE	08		 sub esi,8
+   2092	0000042D  FD			 std
+   2093	0000042E			 jmp1:
+   2094	0000042E  83 E9	08		 sub ecx,8
+   2095	00000431  78 12	90 90 90 90	 js js__
+   2096	00000437  0F 6F	2E		 db 0Fh,6Fh,2Eh	;movq rmmx5,[esi]
+   2097	0000043A  0F 7F	2F		 db 0Fh,7Fh,2Fh	;movq [edi],rmmx5
+   2098	0000043D  83 EF	08		 sub edi,8
+   2099	00000440  83 EE	08		 sub esi,8
+   2100	00000443  EB E9			 jmp jmp1
+   2101	00000445			 js__:
+   2102	00000445  83 C6	08		 add esi,8
+   2103	00000448  83 C7	08		 add edi,8
+   2104	0000044B  83 C1	08		 add ecx,8
+   2105	0000044E  F3> A4		 rep movsb
+   2106	00000450			 m1__:
+   2107					 ;rd2
+   2108					 ;rd1
+   2109
+   2110	00000450  FC			 cld
+   2111	00000451  8B FE			 mov edi,esi
+   2112	00000453  47			 inc edi
+   2113	00000454  8B C3			 mov eax,ebx
+   2114	00000456  40			 inc eax
+   2115					 p eax
+**Error** lz.asm(547) Illegal instruction
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 39
+lz.asm
+
+
+
+   2116	00000457  66| AB		 stosw
+   2117					 ;
+   2118					 p edi
+**Error** lz.asm(550) Illegal instruction
+   2119	00000459  48			 dec eax
+   2120	0000045A  8B C8			 mov ecx,eax
+   2121	0000045C  C1 E0	02		 shl eax,2
+   2122	0000045F  03 05	00000040r	 add eax,hpart
+   2123	00000465  97			 xchg edi,eax
+   2124	00000466  48			 dec eax
+   2125	00000467  48			 dec eax
+   2126	00000468  83 3F	00		 cmp [edi],0
+*Warning* lz.asm(558) Argument needs type override
+   2127	0000046B  75 07	90 90 90 90	 jne ne
+   2128	00000471  AB			 stosd
+   2129	00000472  FD			 std
+   2130	00000473  AF			 scasd
+   2131	00000474			 ne:
+*Warning* lz.asm(563) Reserved word used as symbol: NE
+   2132	00000474  FD			 std
+   2133	00000475  AF			 scasd
+   2134	00000476  8B F7			 mov esi,edi
+   2135	00000478			 ll1:
+   2136	00000478  AD			 lodsd
+   2137	00000479  0B C0			 or eax,eax
+   2138	0000047B  74 07	90 90 90 90	 jz nx_
+   2139	00000481  83 C0	0C		 add eax,11+1
+   2140	00000484			 nx_:
+   2141	00000484  AB			 stosd
+   2142	00000485  E2 F1			 loop ll1
+   2143	00000487  FC			 cld
+   2144	00000488  5F			 pop edi
+   2145	00000489  89 3D	0000008Dr	 mov dum1,edi
+   2146	0000048F  47			 inc edi
+   2147	00000490  47			 inc edi
+   2148	00000491  A1 00000091r		 mov eax,dic_top
+   2149	00000496  AB			 stosd
+   2150					 p eax
+**Error** lz.asm(582) Illegal instruction
+   2151	00000497  A1 00000060r		 mov eax,nzakodir
+   2152	0000049C  40			 inc eax
+   2153	0000049D  40			 inc eax
+   2154	0000049E  AB			 stosd
+   2155	0000049F  58			 pop eax
+   2156	000004A0  8B F8			 mov edi,eax
+   2157	000004A2  58			 pop eax
+   2158	000004A3  66| AB		 stosw
+   2159	000004A5  8B C8			 mov ecx,eax
+   2160	000004A7  0F 7E	CE		 db  0fh,7eh,0ceh ;movd	esi,rmmx1
+   2161	000004AA  39 0D	00000006r	 cmp max_str,ecx
+   2162	000004B0  73 0A	90 90 90 90	 jae jaem
+   2163	000004B6  89 0D	00000006r	 mov max_str,ecx
+   2164	000004BC			 jaem:
+   2165	000004BC  49			 dec ecx
+   2166	000004BD  F3> A4		 rep movsb
+   2167	000004BF  66| 8B 15 00000000r	 mov dx,tag ;add+rol
+   2168					 ;eax=new_len
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 40
+lz.asm
+
+
+
+   2169					 ;int 3
+   2170	000004C6  8B C8			 mov ecx,eax
+   2171	000004C8  33 C0			 xor eax,eax
+   2172	000004CA  AC			 lodsb
+   2173	000004CB  AA			 stosb
+   2174	000004CC  F7 C1	00000001	 test ecx,1
+   2175	000004D2  75 07	90 90 90 90	 jnz ecx0
+   2176	000004D8  C1 E0	08		 shl eax,8
+   2177	000004DB			 ecx0:
+   2178	000004DB  66| 03 C2		 add ax,dx
+   2179	000004DE  89 3D	00000091r	 mov dic_top,edi
+   2180	000004E4  8B 3D	0000008Dr	 mov edi,dum1
+   2181	000004EA  66| D1 C0		 rol ax,1
+   2182	000004ED  66| AB		 stosw
+   2183	000004EF  5E			 pop esi
+   2184					 ;
+   2185	000004F0  46			 inc esi
+   2186	000004F1  0F 6E	CE		 db 0fh,6eh,0ceh ;movd rmmx1,esi
+   2187					 ;обновили cur_buf
+   2188	000004F4  A1 00000065r		 mov eax,fin_edi
+   2189	000004F9  2B C6			 sub eax,esi
+   2190	000004FB  74 4D	90 90 90 90	 jz full_exit
+   2191	00000501  78 47	90 90 90 90	 js full_exit
+   2192	00000507  3B 05	00000006r	 cmp eax,max_str
+   2193	0000050D  73 09	90 90 90 90	 jae oke
+   2194					 ;
+   2195	00000513  A3 00000006r		 mov max_str,eax
+   2196	00000518			 oke:
+   2197	00000518  4E			 dec esi
+   2198	00000519  5D			 pop ebp
+   2199	0000051A  8B FD			 mov edi,ebp
+   2200	0000051C  A1 0000000Ar		 mov eax,num_frase
+   2201	00000521  8B 15	00000060r	 mov edx,nzakodir
+   2202	00000527  0F BD	CA		 db 0Fh,0BDh,0CAh ;bsr ecx,edx
+   2203	0000052A  C1 E9	03		 shr ecx,3
+   2204	0000052D  0B C9			 or ecx,ecx
+   2205	0000052F  74 04	90 90 90 90	 je noecx
+   2206					 ;
+   2207	00000535			 noecx:
+   2208	00000535  FF 05	00000060r	 inc nzakodir
+   2209	0000053B			 wr_n:
+   2210	0000053B  AA			 stosb
+   2211	0000053C  C1 C8	08		 ror eax,8
+   2212	0000053F  49			 dec ecx
+   2213	00000540  79 F9			 jns wr_n
+   2214	00000542  A4			 movsb
+   2215					 ;int 3
+   2216	00000543  8B EF			 mov ebp,edi
+   2217					 ;rd2
+   2218	00000545  E9 FFFFFD44		 jmp fnd
+   2219
+   2220	0000054A			 full_exit:
+   2221	0000054A  C6 05	00000033r 01	 mov fex,1
+   2222	00000551  EB C5			 jmp oke
+   2223
+   2224	00000553			 fndex_1:
+   2225					 ;rd2
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 41
+lz.asm
+
+
+
+   2226	00000553  8B 3D	0000000Er	 mov edi,dics_top
+   2227	00000559  33 C0			 xor eax,eax
+   2228	0000055B  40			 inc eax
+   2229					 p eax
+**Error** lz.asm(661) Illegal instruction
+   2230	0000055C  66| AB		 stosw
+   2231	0000055E  89 3D	0000008Dr	 mov dum1,edi
+   2232	00000564  47			 inc edi
+   2233	00000565  47			 inc edi
+   2234	00000566  8B C8			 mov ecx,eax
+   2235	00000568  8B 15	00000091r	 mov edx,dic_top
+   2236	0000056E  8B C2			 mov eax,edx
+   2237	00000570  AB			 stosd
+   2238	00000571  A1 00000060r		 mov eax,nzakodir
+   2239	00000576  83 C0	02		 add eax,2
+   2240	00000579  FF 05	00000060r	 inc nzakodir
+   2241	0000057F  AB			 stosd ;num_frase
+   2242	00000580  89 3D	0000000Er	 mov dics_top,edi
+   2243	00000586  58			 pop eax
+   2244	00000587  8B FA			 mov edi,edx
+   2245	00000589  66| AB		 stosw ;len_dic
+   2246	0000058B  33 C0			 xor eax,eax
+   2247	0000058D  0F 7E	CE		 db  0fh,7eh,0ceh ;movd	esi,rmmx1
+   2248	00000590  AC			 lodsb
+   2249	00000591  0F 6E	CE		 db 0fh,6eh,0ceh ;movd rmmx1,esi
+   2250	00000594  AA			 stosb
+   2251	00000595  89 3D	00000091r	 mov dic_top,edi
+   2252	0000059B  8B 3D	0000008Dr	 mov edi,dum1
+   2253					 p eax
+**Error** lz.asm(685) Illegal instruction
+   2254	000005A1  66| D1 C0		 rol ax,1
+   2255	000005A4  66| AB		 stosw	 ;SUM_db
+   2256	000005A6  58			 pop eax
+   2257	000005A7  5F			 pop edi ;=ebp_old=hmem
+   2258	000005A8  8A E0			 mov ah,al
+   2259	000005AA  B0 01			 mov al,1
+   2260	000005AC  8B 15	00000060r	 mov edx,nzakodir
+   2261	000005B2  0F BD	CA		 db 0Fh,0BDh,0CAh ;bsr ecx,edx
+   2262	000005B5  C1 E9	03		 shr ecx,3
+   2263	000005B8			 jss2:
+   2264	000005B8  AA			 stosb
+   2265	000005B9  49			 dec ecx
+   2266	000005BA  78 08	90 90 90 90	 js jss
+   2267	000005C0  32 C0			 xor al,al
+   2268	000005C2  EB F4			 jmp jss2
+   2269	000005C4			 jss:
+   2270	000005C4  8A C4			 mov al,ah
+   2271	000005C6  AA			 stosb
+   2272	000005C7  8B EF			 mov ebp,edi
+   2273	000005C9  A1 00000065r		 mov eax,fin_edi
+   2274	000005CE  2B C6			 sub eax,esi
+   2275	000005D0  79 0B	90 90 90 90	 jns jns1
+   2276	000005D6  C6 05	00000033r 01	 mov fex,1
+   2277	000005DD			 jns1:
+   2278	000005DD  75 10	90 90 90 90	 jnz io
+   2279	000005E3  C6 05	00000033r 01	 mov fex,1
+   2280	000005EA  EB 14	90 90 90	 jmp oke2
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 42
+lz.asm
+
+
+
+   2281	000005EF			 io:
+   2282	000005EF  3B 05	00000006r	 cmp eax,max_str
+   2283	000005F5  73 09	90 90 90 90	 jae oke2
+   2284					 ;
+   2285	000005FB  A3 00000006r		 mov max_str,eax
+   2286	00000600			 oke2:
+   2287	00000600  E9 FFFFFC89		 jmp fnd
+   2288
+   2289
+   2290	00000605			 exlz:
+   2291					 p0
+1  2292	00000605  33 C0			 xor eax,eax
+   2293					 p of f1
+**Error** lz.asm(724) Illegal instruction
+   2294	00000607  2B 2D	00000034r	 sub ebp,hmem
+   2295					 p ebp ;sz
+**Error** lz.asm(726) Illegal instruction
+   2296					 p hmem
+**Error** lz.asm(727) Illegal instruction
+   2297					 p hfd
+**Error** lz.asm(728) Illegal instruction
+   2298					 extrn WriteFile:proc
+   2299	0000060D  E8 00000000e		 call WriteFile
+   2300	00000612  C3			 ret
+   2301					 ;;;;;;;;;;;
+   2302	00000613			 unpack:   ;0ffffh of frases
+   2303					 p len_win
+**Error** lz.asm(734) Illegal instruction
+   2304	00000613  8F 05	0000001Ar	 pop window
+   2305	00000619  8B 3D	00000034r	 mov edi,hmem
+   2306	0000061F  8B 15	00000058r	 mov edx,hdic
+   2307	00000625  8B EA			 mov ebp,edx
+   2308	00000627  33 DB			 xor ebx,ebx ;счетчик кодов
+   2309	00000629			 ubk0:
+   2310	00000629  4B			 dec ebx
+   2311	0000062A			 ubk1:
+   2312	0000062A  33 C0			 xor eax,eax
+   2313	0000062C  43			 inc ebx
+   2314	0000062D  B9 00000004		 mov ecx,4
+   2315					 p ebx
+**Error** lz.asm(746) Illegal instruction
+   2316	00000632			 u4:
+   2317	00000632  AC			 lodsb
+   2318	00000633  C1 EB	08		 shr ebx,8
+   2319	00000636  0B DB			 or ebx,ebx
+   2320	00000638  74 0B	90 90 90 90	 jz u3
+   2321	0000063E  CC			 int 3
+   2322	0000063F  C1 C8	08		 ror eax,8
+   2323	00000642  49			 dec ecx
+   2324	00000643  EB ED			 jmp u4
+   2325	00000645			 u3:
+   2326	00000645  5B			 pop ebx
+   2327	00000646  C1 E1	03		 shl ecx,3
+   2328	00000649  D3 C8			 ror eax,cl
+   2329	0000064B  48			 dec eax
+   2330	0000064C  79 05	90 90 90 90	 jns u1
+   2331					 ;exit
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 43
+lz.asm
+
+
+
+   2332	00000652  C3			 ret
+   2333	00000653			 u1:
+   2334	00000653  75 13	90 90 90 90	 jnz u2
+   2335	00000659  40			 inc eax
+   2336	0000065A  87 FD			 xchg edi,ebp
+   2337	0000065C  66| AB		 stosw
+   2338	0000065E  AC			 lodsb
+   2339	0000065F  AA			 stosb
+   2340	00000660  87 FD			 xchg edi,ebp
+   2341	00000662  AA			 stosb
+   2342	00000663  EB 33	90 90 90	 jmp ubk2
+   2343	00000668			 u2:
+   2344					 p eax
+**Error** lz.asm(775) Illegal instruction
+   2345	00000668  AC			 lodsb
+   2346	00000669  A2 00000064r		 mov s,al
+   2347	0000066E  59			 pop ecx
+   2348					 p esi
+**Error** lz.asm(779) Illegal instruction
+   2349	0000066F  8B F2			 mov esi,edx
+   2350	00000671  33 C0			 xor eax,eax
+   2351	00000673			 u6:
+   2352	00000673  66| AD		 lodsw
+   2353	00000675  49			 dec ecx
+   2354	00000676  74 08	90 90 90 90	 jz u5
+   2355	0000067C  03 F0			 add esi,eax
+   2356	0000067E  EB F3			 jmp u6
+   2357	00000680			 u5:
+   2358	00000680  8B C8			 mov ecx,eax
+   2359					 p edi
+**Error** lz.asm(790) Illegal instruction
+   2360					 p ecx
+**Error** lz.asm(791) Illegal instruction
+   2361	00000682  8B FD			 mov edi,ebp
+   2362	00000684  40			 inc eax
+   2363	00000685  66| AB		 stosw
+   2364	00000687  A0 00000064r		 mov al,s
+   2365					 p edi
+**Error** lz.asm(796) Illegal instruction
+   2366	0000068C  F3> A4		 rep movsb
+   2367	0000068E  AA			 stosb
+   2368	0000068F  5E			 pop esi
+   2369	00000690  8B EF			 mov ebp,edi
+   2370	00000692  59			 pop ecx
+   2371	00000693  5F			 pop edi
+   2372	00000694  41			 inc ecx
+   2373	00000695  F3> A4		 rep movsb
+   2374	00000697  5E			 pop esi
+   2375	00000698			 ubk2:
+   2376					 ;int 3
+   2377	00000698  8B CD			 mov ecx,ebp
+   2378	0000069A  03 0D	0000001Ar	 add ecx,window
+   2379	000006A0  41			 inc ecx
+   2380	000006A1  41			 inc ecx
+   2381	000006A2  2B 0D	00000058r	 sub ecx,hdic
+   2382	000006A8  3B 0D	00000016r	 cmp ecx,SZ_DIC
+   2383	000006AE  0F 82	FFFFFF76	 jb ubk1
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 44
+lz.asm
+
+
+
+   2384	000006B4  8B 2D	00000058r	 mov ebp,hdic
+   2385	000006BA  60			 pusha
+   2386	000006BB  8B FA			 mov edi,edx
+   2387	000006BD  C1 E9	05		 shr ecx,5
+   2388	000006C0  41			 inc ecx
+   2389	000006C1  E8 00000008		 call cls
+   2390	000006C6  61			 popa
+   2391	000006C7  33 DB			 xor ebx,ebx
+   2392	000006C9  E9 FFFFFF5B		 jmp ubk0
+   2393
+   2394	000006CE			 cls:
+   2395					 movq [edi],rmmx4
+1  2396	000006CE			 ??0000:
+1  2397	000006CE  0F C1	27			 xadd	 [edi],rmmx4
+1  2398	000006D1			 ??0001:
+1  2399	000006CF  7F				 db	 _opc_movq_st
+   2400					 movq [edi+8],rmmx4
+1  2401	000006D1			 ??0002:
+1  2402	000006D1  0F C1	67 08			 xadd	 [edi+8],rmmx4
+1  2403	000006D5			 ??0003:
+1  2404	000006D2  7F				 db	 _opc_movq_st
+   2405					 movq [edi+8*2],rmmx4
+1  2406	000006D5			 ??0004:
+1  2407	000006D5  0F C1	67 10			 xadd	 [edi+8*2],rmmx4
+1  2408	000006D9			 ??0005:
+1  2409	000006D6  7F				 db	 _opc_movq_st
+   2410					 movq [edi+8*3],rmmx4
+1  2411	000006D9			 ??0006:
+1  2412	000006D9  0F C1	67 18			 xadd	 [edi+8*3],rmmx4
+1  2413	000006DD			 ??0007:
+1  2414	000006DA  7F				 db	 _opc_movq_st
+   2415	000006DD  83 C7	20		 add edi,32
+   2416	000006E0  49			 dec ecx
+   2417	000006E1  75 EB			 jnz cls
+   2418					 ;int 3
+   2419	000006E3  C7 05	00000060r     +	 mov nzakodir,0
+   2420		  00000000
+   2421	000006ED  C3			 ret
+   2422
+   2423					 end m1
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 45
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??0000				  Near32 FLAT:06CE
+??0001				  Near32 FLAT:06D1
+??0002				  Near32 FLAT:06D1
+??0003				  Near32 FLAT:06D5
+??0004				  Near32 FLAT:06D5
+??0005				  Near32 FLAT:06D9
+??0006				  Near32 FLAT:06D9
+??0007				  Near32 FLAT:06DD
+??DATE				  Text	 "10-20-18"
+??FILENAME			  Text	 "lz	  "
+??TIME				  Text	 "13:59:10"
+??VERSION			  Number 0500
+@32BIT				  Text	 1
+@CODE				  Text	 FLAT
+@CODESIZE			  Text	 0
+@CPU				  Text	 0000H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 FLAT
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 LZ
+@INTERFACE			  Text	 003H
+@MODEL				  Text	 1
+@STACK				  Text	 FLAT
+@WORDSIZE			  Text	 4
+ACL_REVISION			  Number 0002
+AF_APPLETALK			  Number 0010
+AF_CCITT			  Number 000A
+AF_CHAOS			  Number 0005
+AF_DATAKIT			  Number 0009
+AF_DECNET			  Number 000C
+AF_DLI				  Number 000D
+AF_ECMA				  Number 0008
+AF_HYLINK			  Number 000F
+AF_IMPLINK			  Number 0003
+AF_INET				  Number 0002
+AF_IPX				  Number 0006
+AF_ISO				  Number 0007
+AF_LAT				  Number 000E
+AF_MAX				  Number 0012
+AF_NETBIOS			  Number 0011
+AF_NS				  Number 0006
+AF_OSI				  Alias	 AF_ISO
+AF_PUP				  Number 0004
+AF_SNA				  Number 000B
+AF_UNIX				  Number 0001
+AF_UNSPEC			  Number 0000
+ANSI_FIXED_FONT			  Number 000B
+ANSI_VAR_FONT			  Number 000C
+BACKGROUND_BLUE			  Number 0010
+BACKGROUND_GREEN		  Number 0020
+BACKGROUND_INTENSITY		  Number 0080
+BACKGROUND_RED			  Number 0040
+BI_RGB				  Number 0000
+BLACKNESS			  Number 0042
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 46
+Symbol Table
+
+
+
+BLACK_BRUSH			  Number 0004
+BLACK_PEN			  Number 0007
+CLS				  Near32 FLAT:06CE
+COLOR_ACTIVECAPTION		  Number 0002
+COLOR_INACTIVECAPTION		  Number 0003
+COLOR_MENU			  Number 0004
+COLOR_MENUTEXT			  Number 0007
+COLOR_WINDOW			  Number 0005
+COLOR_WINDOWFRAME		  Number 0006
+COLOR_WINDOWTEXT		  Number 0008
+CONV				  Near32 FLAT:0199
+CORR				  Near32 FLAT:039C
+CREATEFILEA			  Near32 FLAT:---- Extern
+CREATE_ALWAYS			  Number 0002
+CREATE_NEW			  Number 0001
+CREATE_NEW_CONSOLE		  Number 0010
+CREATE_SUSPENDED		  Number 0004
+CSIDL_APPDATA			  Number 001A
+CS_BYTEALIGNCLIENT		  Number 1000
+CS_BYTEALIGNWINDOW		  Number 2000
+CS_CLASSDC			  Number 0040
+CS_DBLCLKS			  Number 0008
+CS_GLOBALCLASS			  Number 4000
+CS_HREDRAW			  Number 0002
+CS_KEYCVTWINDOW			  Number 0004
+CS_NOCLOSE			  Number 0200
+CS_NOKEYCVT			  Number 0100
+CS_OWNDC			  Number 0020
+CS_PARENTDC			  Number 0080
+CS_SAVEBITS			  Number 0800
+CS_VREDRAW			  Number 0001
+CW_USEDEFAULT			  Number 8000
+DACL_SECURITY_INFORMATION	  Number 0004
+DDL_ARCHIVE			  Number 0020
+DDL_DIRECTORY			  Number 0010
+DDL_DRIVES			  Number 4000
+DDL_EXCLUSIVE			  Number 8000
+DDL_HIDDEN			  Number 0002
+DDL_POSTMSGS			  Number 2000
+DDL_READONLY			  Number 0001
+DDL_READWRITE			  Number 0000
+DDL_SYSTEM			  Number 0004
+DEFAULT_PALETTE			  Number 000F
+DELETE				  Number 00010000
+DEVICE_DEFAULT_FONT		  Number 000E
+DIALOGBOXPARAMA			  Near32 ----:---- Extern
+DIB_PAL_COLORS			  Number 0001
+DIB_RGB_COLORS			  Number 0000
+DICS_TOP			  Dword	 FLAT:000E
+DIC_TOP				  Dword	 FLAT:0091
+DKGRAY_BRUSH			  Number 0003
+DLL_PROCESS_ATTACH		  Number 0001
+DLL_PROCESS_DETACH		  Number 0000
+DLL_THREAD_ATTACH		  Number 0002
+DLL_THREAD_DETACH		  Number 0003
+DOT_MARKER			  Number 0009
+DSTINVERT			  Number 00550009
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 47
+Symbol Table
+
+
+
+DS_3DLOOK			  Number 0004
+DS_ABSALIGN			  Number 0001
+DS_CENTER			  Number 0800
+DS_CENTERMOUSE			  Number 1000
+DS_CONTEXTHELP			  Number 2000
+DS_CONTROL			  Number 0400
+DS_FIXEDSYS			  Number 0008
+DS_LOCALEDIT			  Number 0020
+DS_MODALFRAME			  Number 0080
+DS_NOFAILCREATE			  Number 0010
+DS_NOIDLEMSG			  Number 0100
+DS_SETFONT			  Number 0040
+DS_SETFOREGROUND		  Number 0200
+DS_SYSMODAL			  Number 0002
+DT_BOTTOM			  Number 0008
+DT_CALCRECT			  Number 0400
+DT_CENTER			  Number 0001
+DT_EDITCONTROL			  Number 2000
+DT_END_ELLIPSIS			  Number 8000
+DT_EXPANDTABS			  Number 0040
+DT_EXTERNALLEADING		  Number 0200
+DT_INTERNAL			  Number 1000
+DT_MODIFYSTRING			  Number 00010000
+DT_NOCLIP			  Number 0100
+DT_NOPREFIX			  Number 0800
+DT_PATH_ELLIPSIS		  Number 4000
+DT_RIGHT			  Number 0002
+DT_RTLREADING			  Number 00020000
+DT_SINGLELINE			  Number 0020
+DT_TABSTOP			  Number 0080
+DT_VCENTER			  Number 0004
+DT_WORDBREAK			  Number 0010
+DT_WORD_ELLIPSIS		  Number 00040000
+DUM1				  Dword	 FLAT:008D
+DWO				  Text	 dword ptr
+EBPNZ				  Near32 FLAT:03EA
+EBX0				  Near32 FLAT:03D5
+ECX0				  Near32 FLAT:04DB
+ENABLESCROLLBAR			  Near32 ----:---- Extern
+ENDDIALOG			  Near32 ----:---- Extern
+EQU_				  Near32 FLAT:0412
+ERROR_SUCCESS			  Number 0000
+ES_AUTOHSCROLL			  Number 0080
+ES_AUTOVSCROLL			  Number 0040
+ES_CENTER			  Number 0001
+ES_LEFT				  Number 0000
+ES_LOWERCASE			  Number 0010
+ES_MULTILINE			  Number 0004
+ES_NOHIDESEL			  Number 0100
+ES_NUMBER			  Number 2000
+ES_OEMCONVERT			  Number 0400
+ES_PASSWORD			  Number 0020
+ES_READONLY			  Number 0800
+ES_RIGHT			  Number 0002
+ES_UPPERCASE			  Number 0008
+ES_WANTRETURN			  Number 1000
+EXCEPTION_CONTINUE_EXECUTION	  Number -0001
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 48
+Symbol Table
+
+
+
+EXCEPTION_CONTINUE_SEARCH	  Number 0000
+EXCEPTION_EXECUTE_HANDLER	  Number 0001
+EXIT				  Near32 FLAT:0070
+EXIT1				  Near32 FLAT:0072
+EXITPROCESS			  Near32 ----:---- Extern
+EXITTT				  Near32 FLAT:0277
+EXLZ				  Near32 FLAT:0605
+F1				  Byte	 FLAT:001E
+F2				  Byte	 FLAT:0024
+FD_ACCEPT			  Number 0008
+FD_CLOSE			  Number 0020
+FD_CONNECT			  Number 0010
+FD_OOB				  Number 0004
+FD_READ				  Number 0001
+FD_WRITE			  Number 0002
+FEX				  Byte	 FLAT:0033
+FGO				  Near32 FLAT:02B9
+FILE_ATTRIBUTE_ARCHIVE		  Number 0020
+FILE_ATTRIBUTE_COMPRESSED	  Number 0800
+FILE_ATTRIBUTE_DIRECTORY	  Number 0010
+FILE_ATTRIBUTE_HIDDEN		  Number 0002
+FILE_ATTRIBUTE_NORMAL		  Number 0080
+FILE_ATTRIBUTE_READONLY		  Number 0001
+FILE_ATTRIBUTE_SYSTEM		  Number 0004
+FILE_ATTRIBUTE_TEMPORARY	  Number 0100
+FILE_BEGIN			  Number 0000
+FILE_CURRENT			  Number 0001
+FILE_END			  Number 0002
+FILE_FLAG_DELETE_ON_CLOSE	  Number 04000000
+FILE_MAP_COPY			  Alias	 SECTION_QUERY
+FILE_MAP_READ			  Alias	 SECTION_MAP_READ
+FILE_MAP_WRITE			  Alias	 SECTION_MAP_WRITE
+FILE_SHARE_READ			  Number 0001
+FILE_SHARE_WRITE		  Number 0002
+FIN_DIC				  Dword	 FLAT:0069
+FIN_DICS			  Dword	 FLAT:0002
+FIN_EDI				  Dword	 FLAT:0065
+FIONBIO				  Number 8004667E
+FIONREAD			  Number 4004667F
+FLAG_ICC_FORCE_CONNECTION	  Text	 0x00000001
+FND				  Near32 FLAT:028E
+FNDEX_1				  Near32 FLAT:0553
+FOREGROUND_BLUE			  Number 0001
+FOREGROUND_GREEN		  Number 0002
+FOREGROUND_INTENSITY		  Number 0008
+FOREGROUND_RED			  Number 0004
+FORMAT_MESSAGE_ALLOCATE_BUFFER	  Number 0100
+FORMAT_MESSAGE_ARGUMENT_ARRAY	  Number 2000
+FORMAT_MESSAGE_FROM_HMODULE	  Number 0800
+FORMAT_MESSAGE_FROM_STRING	  Number 0400
+FORMAT_MESSAGE_FROM_SYSTEM	  Number 1000
+FORMAT_MESSAGE_IGNORE_INSERTS	  Number 0200
+FORMAT_MESSAGE_MAX_WIDTH_MASK	  Number 00FF
+FTP_TRANSFER_TYPE_ASCII		  Number 0001
+FTP_TRANSFER_TYPE_BINARY	  Number 0002
+FULL_EXIT			  Near32 FLAT:054A
+GENERIC_READ			  Number 80000000
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 49
+Symbol Table
+
+
+
+GENERIC_WRITE			  Number 40000000
+GETCOMMANDLINEA			  Near32 FLAT:---- Extern
+GETDLGITEMTEXTA			  Near32 ----:---- Extern
+GETFILESIZE			  Near32 FLAT:---- Extern
+GETMODULEHANDLEA		  Near32 ----:---- Extern
+GETSCROLLRANGE			  Near32 ----:---- Extern
+GETSYSTEMINFO			  Near32 FLAT:---- Extern
+GETWINDOWRECT			  Near32 ----:---- Extern
+GGO				  Near32 FLAT:0055
+GO				  Near32 FLAT:013A
+GOO				  Near32 FLAT:0248
+GRAY_BRUSH			  Number 0002
+GROUP_SECURITY_INFORMATION	  Number 0002
+GW_CHILD			  Number 0005
+GW_MAX				  Number 0005
+GW_OWNER			  Number 0004
+HC_ACTION			  Number 0000
+HC_GETNEXT			  Number 0001
+HC_NOREM			  Alias	 HC_NOREMOVE
+HC_NOREMOVE			  Number 0003
+HC_SKIP				  Number 0002
+HC_SYSMODALOFF			  Number 0005
+HC_SYSMODALON			  Number 0004
+HDIC				  Dword	 FLAT:0058
+HDICS				  Dword	 FLAT:003C
+HFD				  Dword	 FLAT:002B
+HFILE_ERROR			  Number -0001
+HFS				  Dword	 FLAT:002F
+HI_				  Dword	 FLAT:0054
+HKEY_CLASSES_ROOT		  Number 80000000
+HKEY_CURRENT_CONFIG		  Number 80000005
+HKEY_CURRENT_USER		  Number 80000001
+HKEY_LOCAL_MACHINE		  Number 80000002
+HKEY_PERFORMANCE_DATA		  Number 80000004
+HKEY_USERS			  Number 80000003
+HMEM				  Dword	 FLAT:0034
+HMEMF				  Dword	 FLAT:0038
+HOLLOW_BRUSH			  Number 0005
+HPART				  Dword	 FLAT:0040
+HWND_BROADCAST			  Number FFFF
+IDABORT				  Number 0003
+IDCANCEL			  Number 0002
+IDCLOSE				  Number 0008
+IDC_ARROW			  Number 7F00
+IDC_CROSS			  Number 7F03
+IDC_IBEAM			  Number 7F01
+IDC_ICON			  Number 7F81
+IDC_SIZE			  Number 7F80
+IDC_SIZENESW			  Number 7F83
+IDC_SIZENS			  Number 7F85
+IDC_SIZENWSE			  Number 7F82
+IDC_SIZEWE			  Number 7F84
+IDC_UPARROW			  Number 7F04
+IDC_WAIT			  Number 7F02
+IDHELP				  Number 0009
+IDIGNORE			  Number 0005
+IDI_APPLICATION			  Number 7F00
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 50
+Symbol Table
+
+
+
+IDI_ASTERISK			  Number 7F04
+IDI_EXCLAMATION			  Number 7F03
+IDI_HAND			  Number 7F01
+IDI_QUESTION			  Number 7F02
+IDNO				  Number 0007
+IDOK				  Number 0001
+IDRETRY				  Number 0004
+IDYES				  Number 0006
+INTERNET_DEFAULT_FTP_PORT	  Number 0015
+INTERNET_FLAG_ASYNC		  Number 10000000
+INTERNET_OPEN_TYPE_DIRECT	  Number 0001
+INTERNET_SERVICE_FTP		  Number 0001
+INVALID_HANDLE_VALUE		  Number -0001
+IO				  Near32 FLAT:05EF
+J1				  Near32 FLAT:008A
+J2				  Near32 FLAT:0096
+JAEM				  Near32 FLAT:04BC
+JB999				  Near32 FLAT:0340
+JBEM				  Near32 FLAT:02B8
+JMP1				  Near32 FLAT:042E
+JNE__0				  Near32 FLAT:027C
+JNS1				  Near32 FLAT:05DD
+JSS				  Near32 FLAT:05C4
+JSS2				  Near32 FLAT:05B8
+JS__				  Near32 FLAT:0445
+KEY_CREATE_LINK			  Number 0020
+KEY_CREATE_SUB_KEY		  Number 0004
+KEY_ENUMERATE_SUB_KEYS		  Number 0008
+KEY_EVENT			  Number 0001
+KEY_EXECUTE			  Alias	 KEY_READ
+KEY_NOTIFY			  Number 0010
+KEY_QUERY_VALUE			  Number 0001
+KEY_READ			  Number 0019
+KEY_SET_VALUE			  Number 0002
+KEY_WRITE			  Number 0006
+LEN_WIN				  Dword	 FLAT:0012
+LHND				  Number 0042
+LL1				  Near32 FLAT:0478
+LMEM_DISCARDABLE		  Number 0F00
+LMEM_FIXED			  Number 0000
+LMEM_INVALID_HANDLE		  Number 8000
+LMEM_MODIFY			  Number 0080
+LMEM_MOVEABLE			  Number 0002
+LMEM_NOCOMPACT			  Number 0010
+LMEM_NODISCARD			  Number 0020
+LMEM_VALID_FLAGS		  Number 0F72
+LMEM_ZEROINIT			  Number 0040
+LO1				  Near32 FLAT:0349
+LO2				  Near32 FLAT:0366
+LOCALALLOC			  Near32 ----:---- Extern
+LOCALFREE			  Near32 FLAT:---- Extern
+LO_				  Dword	 FLAT:0050
+LPTR				  Number 0040
+LTGRAY_BRUSH			  Number 0001
+LZ78				  Near32 FLAT:01C4
+M1				  Near32 FLAT:0000
+M1__				  Near32 FLAT:0450
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 51
+Symbol Table
+
+
+
+MAX_STR				  Dword	 FLAT:0006
+MB_ABORTRETRYIGNORE		  Number 0002
+MB_APPLMODAL			  Number 0000
+MB_DEFBUTTON1			  Number 0000
+MB_DEFBUTTON2			  Number 0100
+MB_DEFBUTTON3			  Number 0200
+MB_ICONASTERISK			  Number 0040
+MB_ICONERROR			  Number 0010
+MB_ICONEXCLAMATION		  Number 0030
+MB_ICONHAND			  Number 0010
+MB_ICONINFORMATION		  Alias	 MB_ICONASTERISK
+MB_ICONQUESTION			  Number 0020
+MB_NOFOCUS			  Number 8000
+MB_OK				  Number 0000
+MB_OKCANCEL			  Number 0001
+MB_RETRYCANCEL			  Number 0005
+MB_SYSTEMMODAL			  Number 1000
+MB_TASKMODAL			  Number 2000
+MB_YESNO			  Number 0004
+MB_YESNOCANCEL			  Number 0003
+MEM_COMMIT			  Number 1000
+MEM_DECOMMIT			  Number 4000
+MEM_FREE			  Number 00010000
+MEM_PRIVATE			  Number 00020000
+MEM_RELEASE			  Number 8000
+MEM_RESERVE			  Number 2000
+MERGECOPY			  Number 00C000CA
+MERGEPAINT			  Number 00BB0226
+MESSAGEBOXA			  Near32 FLAT:---- Extern
+MOD_ALT				  Number 0001
+MOD_CONTROL			  Number 0002
+MOD_SHIFT			  Number 0004
+MOD_WIN				  Number 0008
+MOUSE_EVENT			  Number 0002
+MOVQ_R_MR			  Number 0000
+MS1				  Byte	 FLAT:0071
+NE				  Near32 FLAT:0474
+NNN				  Near32 FLAT:00D0
+NOCMD				  Near32 FLAT:0030
+NOECX				  Near32 FLAT:0535
+NORMAL_PRIORITY_CLASS		  Number 0020
+NOSC				  Near32 FLAT:03A6
+NOTSRCCOPY			  Number 00330008
+NOTSRCERASE			  Number 001100A6
+NSRC				  Dword	 FLAT:005C
+NULL_BRUSH			  Number 0005
+NULL_PEN			  Number 0008
+NUM_FRASE			  Dword	 FLAT:000A
+NUM_FRASES			  Dword	 FLAT:006D
+NXC				  Near32 FLAT:01C3
+NXC0				  Near32 FLAT:01A5
+NXC1				  Near32 FLAT:01BA
+NXSC				  Near32 FLAT:03B6
+NX_				  Near32 FLAT:0484
+NZAKODIR			  Dword	 FLAT:0060
+OBJ_CASE_INSENSITIVE		  Number 0040
+OBJ_EXCLUSIVE			  Number 0020
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 52
+Symbol Table
+
+
+
+OBJ_INHERIT			  Number 0002
+OBJ_KERNEL_HANDLE		  Number 0200
+OBJ_OPENIF			  Number 0080
+OBJ_OPENLINK			  Number 0100
+OBJ_PERMANENT			  Number 0010
+OBJ_VALID_ATTRIBUTES		  Number 03F2
+OEM_FIXED_FONT			  Number 000A
+OFN_EXPLORER			  Number 00080000
+OFN_EXTENSIONDIFFERENT		  Number 0400
+OFN_FILEMUSTEXIST		  Number 1000
+OFN_HIDEREADONLY		  Number 0004
+OFN_LONGNAMES			  Number 00200000
+OFS_MAXPATHNAME			  Number 0080
+OF_READ				  Number 0000
+OF_READWRITE			  Number 0002
+OF_WRITE			  Number 0001
+OKE				  Near32 FLAT:0518
+OKE2				  Near32 FLAT:0600
+OPENFILE			  Near32 FLAT:---- Extern
+OPEN_ALWAYS			  Number 0004
+OPEN_EXISTING			  Number 0003
+OWNER_SECURITY_INFORMATION	  Number 0001
+PAGE_EXECUTE			  Number 0010
+PAGE_EXECUTE_READ		  Number 0020
+PAGE_EXECUTE_READWRITE		  Number 0040
+PAGE_EXECUTE_WRITECOPY		  Number 0080
+PAGE_GUARD			  Number 0100
+PAGE_NOACCESS			  Number 0001
+PAGE_NOCACHE			  Number 0200
+PAGE_READONLY			  Number 0002
+PAGE_READWRITE			  Number 0004
+PAGE_WRITECOPY			  Number 0008
+PATCOPY				  Number 00F00021
+PATINVERT			  Number 005A0049
+PATPAINT			  Number 00FB0A09
+PF_INET				  Number 0002
+PIPE_ACCESS_DUPLEX		  Number 0003
+PIPE_ACCESS_INBOUND		  Number 0001
+PIPE_ACCESS_OUTBOUND		  Number 0002
+PIPE_CLIENT_END			  Number 0000
+PIPE_NOWAIT			  Number 0001
+PIPE_READMODE_BYTE		  Number 0000
+PIPE_READMODE_MESSAGE		  Number 0002
+PIPE_SERVER_END			  Number 0001
+PIPE_TYPE_BYTE			  Number 0000
+PIPE_TYPE_MESSAGE		  Number 0004
+PIPE_UNLIMITED_INSTANCES	  Number 00FF
+PIPE_WAIT			  Number 0000
+PM_NOREMOVE			  Number 0000
+PM_NOYIELD			  Number 0002
+PM_REMOVE			  Number 0001
+POSTQUITMESSAGE			  Near32 ----:---- Extern
+PROCESS_ALL_ACCESS		  Number 001F0FFF
+PS_ALTERNATE			  Number 0008
+PS_COSMETIC			  Number 0000
+PS_DASH				  Number 0001
+PS_DASHDOT			  Number 0003
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 53
+Symbol Table
+
+
+
+PS_DASHDOTDOT			  Number 0004
+PS_DOT				  Number 0002
+PS_ENDCAP_FLAT			  Number 0200
+PS_ENDCAP_MASK			  Number 0F00
+PS_ENDCAP_ROUND			  Number 0000
+PS_ENDCAP_SQUARE		  Number 0100
+PS_GEOMETRIC			  Number 00010000
+PS_INSIDEFRAME			  Number 0006
+PS_JOIN_BEVEL			  Number 1000
+PS_JOIN_MASK			  Number F000
+PS_JOIN_MITER			  Number 2000
+PS_JOIN_ROUND			  Number 0000
+PS_NULL				  Number 0005
+PS_SOLID			  Number 0000
+PS_STYLE_MASK			  Number 000F
+PS_TYPE_MASK			  Number 000F0000
+PS_USERSTYLE			  Number 0007
+READFILE			  Near32 FLAT:---- Extern
+REG_BINARY			  Number 0003
+REG_DWORD			  Number 0004
+REG_EXPAND_SZ			  Number 0002
+REG_OPTION_NON_VOLATILE		  Number 0000
+REG_OPTION_VOLATILE		  Number 0001
+REG_SZ				  Number 0001
+RHI				  Dword	 FLAT:004C
+RLO				  Dword	 FLAT:0048
+RMMX0				  Text	 eax
+RMMX1				  Text	 ecx
+RMMX2				  Text	 edx
+RMMX3				  Text	 ebx
+RMMX4				  Text	 esp
+RMMX5				  Text	 ebp
+RMMX6				  Text	 esi
+RMMX7				  Text	 edi
+S				  Byte	 FLAT:0064
+SACL_SECURITY_INFORMATION	  Number 0008
+SB_BOTH				  Number 0003
+SB_CTL				  Number 0002
+SB_HORZ				  Number 0000
+SB_VERT				  Number 0001
+SC1				  Near32 FLAT:03EA
+SC2				  Near32 FLAT:0395
+SCROLLWINDOWEX			  Near32 ----:---- Extern
+SC_MANAGER_CONNECT		  Number 0001
+SC_MANAGER_CREATE_SERVICE	  Number 0002
+SC_MANAGER_ENUMERATE_SERVICE	  Number 0004
+SC_MANAGER_LOCK			  Number 0008
+SC_MANAGER_MODIFY_BOOT_CONFIG	  Number 0020
+SC_MANAGER_QUERY_LOCK_STATUS	  Number 0010
+SECTION_EXTEND_SIZE		  Number 0010
+SECTION_MAP_EXECUTE		  Number 0008
+SECTION_MAP_READ		  Number 0004
+SECTION_MAP_WRITE		  Number 0002
+SECTION_QUERY			  Number 0001
+SECURITY_DESCRIPTOR_REVISION	  Number 0001
+SEC_COMMIT			  Number 08000000
+SEC_FILE			  Number 00800000
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 54
+Symbol Table
+
+
+
+SEC_IMAGE			  Number 01000000
+SEC_NOCACHE			  Number 10000000
+SEC_RESERVE			  Number 04000000
+SERVICE_ACCEPT_PAUSE_CONTINUE	  Number 0002
+SERVICE_ACCEPT_SHUTDOWN		  Number 0004
+SERVICE_ACCEPT_STOP		  Number 0001
+SERVICE_ADAPTER			  Number 0004
+SERVICE_AUTO_START		  Number 0002
+SERVICE_BOOT_START		  Number 0000
+SERVICE_CHANGE_CONFIG		  Number 0002
+SERVICE_CONTROL_CONTINUE	  Number 0003
+SERVICE_CONTROL_INTERROGATE	  Number 0004
+SERVICE_CONTROL_PAUSE		  Number 0002
+SERVICE_CONTROL_SHUTDOWN	  Number 0005
+SERVICE_CONTROL_STOP		  Number 0001
+SERVICE_DEMAND_START		  Number 0003
+SERVICE_DISABLED		  Number 0004
+SERVICE_ENUMERATE_DEPENDENTS	  Number 0008
+SERVICE_ERROR_CRITICAL		  Number 0003
+SERVICE_ERROR_IGNORE		  Number 0000
+SERVICE_ERROR_NORMAL		  Number 0001
+SERVICE_ERROR_SEVERE		  Number 0002
+SERVICE_FILE_SYSTEM_DRIVER	  Number 0002
+SERVICE_INTERROGATE		  Number 0080
+SERVICE_KERNEL_DRIVER		  Number 0001
+SERVICE_PAUSED			  Number 0007
+SERVICE_PAUSE_CONTINUE		  Number 0040
+SERVICE_PAUSE_PENDING		  Number 0006
+SERVICE_QUERY_CONFIG		  Number 0001
+SERVICE_QUERY_STATUS		  Number 0004
+SERVICE_RECOGNIZER_DRIVER	  Number 0008
+SERVICE_START			  Number 0010
+SERVICE_START_PENDING		  Number 0002
+SERVICE_STOP			  Number 0020
+SERVICE_STOPPED			  Number 0001
+SERVICE_SYSTEM_START		  Number 0001
+SERVICE_USER_DEFINED_CONTROL	  Number 0100
+SETDLGITEMTEXTA			  Near32 ----:---- Extern
+SETSCROLLPOS			  Near32 ----:---- Extern
+SE_DACL_DEFAULTED		  Number 0008
+SE_DACL_PRESENT			  Number 0004
+SHGFP_TYPE_CURRENT		  Number 0000
+SIOCATMARK			  Number 8004667D
+SM_CXMIN			  Number 001C
+SM_CXSCREEN			  Number 0000
+SM_CYMIN			  Number 001D
+SM_CYSCREEN			  Number 0001
+SND_ALIAS			  Number 00010000
+SND_ALIAS_ID			  Number 00110000
+SND_ALIAS_START			  Number 0000
+SND_APPLICATION			  Number 0080
+SND_ASYNC			  Number 0001
+SND_FILENAME			  Number 00020000
+SND_LOOP			  Number 0008
+SND_MEMORY			  Number 0004
+SND_NODEFAULT			  Number 0002
+SND_NOSTOP			  Number 0010
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 55
+Symbol Table
+
+
+
+SND_NOWAIT			  Number 2000
+SND_PURGE			  Number 0040
+SND_RESOURCE			  Number 00040004
+SND_SYNC			  Number 0000
+SOCK_DGRAM			  Number 0002
+SOCK_RAW			  Number 0003
+SOCK_RDM			  Number 0004
+SOCK_SEQPACKET			  Number 0005
+SOCK_STREAM			  Number 0001
+SRCAND				  Number 008800C6
+SRCCOPY				  Number 00CC0020
+SRCERASE			  Number 00440328
+SRCINVERT			  Number 00660046
+SRCPAINT			  Number 00EE0086
+STANDARD_RIGHTS_REQUIRED	  Number 000F0000
+STATUS_PENDING			  Number 0103
+STD_ERROR_HANDLE		  Number -000C
+STD_INPUT_HANDLE		  Number -000A
+STD_OUTPUT_HANDLE		  Number -000B
+STILL_ACTIVE			  Alias	 STATUS_PENDING
+SW_HIDE				  Number 0000
+SW_MAXIMIZE			  Number 0003
+SW_MINIMIZE			  Number 0006
+SW_NORMAL			  Number 0001
+SW_RESTORE			  Number 0009
+SW_SHOW				  Number 0005
+SW_SHOWDEFAULT			  Number 000A
+SW_SHOWMAXIMIZED		  Number 0003
+SW_SHOWMINIMIZED		  Number 0002
+SW_SHOWMINNOACTIVE		  Number 0007
+SW_SHOWNA			  Number 0008
+SW_SHOWNOACTIVATE		  Number 0004
+SW_SHOWNORMAL			  Number 0001
+SYNCHRONIZE			  Number 00100000
+SYSTEM_FIXED_FONT		  Number 0010
+SYSTEM_FONT			  Number 000D
+SZ_DIC				  Dword	 FLAT:0016
+SZ_FILE_S			  Dword	 FLAT:0044
+TAG				  Word	 FLAT:0000
+THREAD_PRIORITY_NORMAL		  Number 0000
+U1				  Near32 FLAT:0653
+U2				  Near32 FLAT:0668
+U3				  Near32 FLAT:0645
+U4				  Near32 FLAT:0632
+U5				  Near32 FLAT:0680
+U6				  Near32 FLAT:0673
+UBK0				  Near32 FLAT:0629
+UBK1				  Near32 FLAT:062A
+UBK2				  Near32 FLAT:0698
+UNPACK				  Near32 FLAT:0613
+UPDATEWINDOW			  Near32 ----:---- Extern
+UZ				  Byte	 FLAT:008C
+UZ0				  Near32 FLAT:01E9
+VK_0				  Number 0030
+VK_1				  Number 0031
+VK_2				  Number 0032
+VK_3				  Number 0033
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 56
+Symbol Table
+
+
+
+VK_4				  Number 0034
+VK_5				  Number 0035
+VK_6				  Number 0036
+VK_7				  Number 0037
+VK_8				  Number 0038
+VK_9				  Number 0039
+VK_A				  Number 0041
+VK_ADD				  Number 006B
+VK_ATTN				  Number 00F6
+VK_B				  Number 0042
+VK_BACK				  Number 0008
+VK_C				  Number 0043
+VK_CANCEL			  Number 0003
+VK_CAPITAL			  Number 0014
+VK_CLEAR			  Number 000C
+VK_CONTROL			  Number 0011
+VK_CRSEL			  Number 00F7
+VK_D				  Number 0044
+VK_DECIMAL			  Number 006E
+VK_DELETE			  Number 002E
+VK_DIVIDE			  Number 006F
+VK_DOWN				  Number 0028
+VK_E				  Number 0045
+VK_END				  Number 0023
+VK_EREOF			  Number 00F9
+VK_ESCAPE			  Number 001B
+VK_EXECUTE			  Number 002B
+VK_EXSEL			  Number 00F8
+VK_F				  Number 0046
+VK_F1				  Number 0070
+VK_F10				  Number 0079
+VK_F11				  Number 007A
+VK_F12				  Number 007B
+VK_F13				  Number 007C
+VK_F14				  Number 007D
+VK_F15				  Number 007E
+VK_F16				  Number 007F
+VK_F17				  Number 0080
+VK_F18				  Number 0081
+VK_F19				  Number 0082
+VK_F2				  Number 0071
+VK_F20				  Number 0083
+VK_F21				  Number 0084
+VK_F22				  Number 0085
+VK_F23				  Number 0086
+VK_F24				  Number 0087
+VK_F3				  Number 0072
+VK_F4				  Number 0073
+VK_F5				  Number 0074
+VK_F6				  Number 0075
+VK_F7				  Number 0076
+VK_F8				  Number 0077
+VK_F9				  Number 0078
+VK_G				  Number 0047
+VK_H				  Number 0048
+VK_HELP				  Number 002F
+VK_HOME				  Number 0024
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 57
+Symbol Table
+
+
+
+VK_I				  Number 0049
+VK_INSERT			  Number 002D
+VK_J				  Number 004A
+VK_K				  Number 004B
+VK_L				  Number 004C
+VK_LBUTTON			  Number 0001
+VK_LCONTROL			  Number 00A2
+VK_LEFT				  Number 0025
+VK_LMENU			  Number 00A4
+VK_LSHIFT			  Number 00A0
+VK_M				  Number 004D
+VK_MBUTTON			  Number 0004
+VK_MENU				  Number 0012
+VK_MULTIPLY			  Number 006A
+VK_N				  Number 004E
+VK_NEXT				  Number 0022
+VK_NONAME			  Number 00FC
+VK_NUMLOCK			  Number 0090
+VK_NUMPAD0			  Number 0060
+VK_NUMPAD1			  Number 0061
+VK_NUMPAD2			  Number 0062
+VK_NUMPAD3			  Number 0063
+VK_NUMPAD4			  Number 0064
+VK_NUMPAD5			  Number 0065
+VK_NUMPAD6			  Number 0066
+VK_NUMPAD7			  Number 0067
+VK_NUMPAD8			  Number 0068
+VK_NUMPAD9			  Number 0069
+VK_O				  Number 004F
+VK_OEM_CLEAR			  Number 00FE
+VK_P				  Number 0050
+VK_PA1				  Number 00FD
+VK_PAUSE			  Number 0013
+VK_PGDN				  Number 0022
+VK_PGUP				  Number 0021
+VK_PLAY				  Number 00FA
+VK_PRINT			  Number 002A
+VK_PRIOR			  Number 0021
+VK_Q				  Number 0051
+VK_R				  Number 0052
+VK_RBUTTON			  Number 0002
+VK_RCONTROL			  Number 00A3
+VK_RETURN			  Number 000D
+VK_RIGHT			  Number 0027
+VK_RMENU			  Number 00A5
+VK_RSHIFT			  Number 00A1
+VK_S				  Number 0053
+VK_SCROLL			  Number 0091
+VK_SELECT			  Number 0029
+VK_SEPARATOR			  Number 006C
+VK_SHIFT			  Number 0010
+VK_SNAPSHOT			  Number 002C
+VK_SPACE			  Number 0020
+VK_SUBTRACT			  Number 006D
+VK_T				  Number 0054
+VK_TAB				  Number 0009
+VK_U				  Number 0055
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 58
+Symbol Table
+
+
+
+VK_UP				  Number 0026
+VK_V				  Number 0056
+VK_W				  Number 0057
+VK_X				  Number 0058
+VK_Y				  Number 0059
+VK_Z				  Number 005A
+VK_ZOOM				  Number 00FB
+WHITENESS			  Number 00FF0062
+WHITE_BRUSH			  Number 0000
+WHITE_PEN			  Number 0006
+WH_CALLWNDPROC			  Number 0004
+WH_CBT				  Number 0005
+WH_DEBUG			  Number 0009
+WH_FOREGROUNDIDLE		  Number 000B
+WH_GETMESSAGE			  Number 0003
+WH_HARDWARE			  Number 0008
+WH_JOURNALPLAYBACK		  Number 0001
+WH_JOURNALRECORD		  Number 0000
+WH_KEYBOARD			  Number 0002
+WH_MAX				  Number 000B
+WH_MIN				  Number -0001
+WH_MOUSE			  Number 0007
+WH_MSGFILTER			  Number -0001
+WH_SHELL			  Number 000A
+WH_SYSMSGFILTER			  Number 0006
+WINDOW				  Dword	 FLAT:001A
+WM_ACTIVATE			  Number 0006
+WM_ACTIVATEAPP			  Number 001C
+WM_ASKCBFORMATNAME		  Number 030C
+WM_CANCELMODE			  Number 001F
+WM_CHANGECBCHAIN		  Number 030D
+WM_CHAR				  Number 0102
+WM_CHARTOITEM			  Number 002F
+WM_CHILDACTIVATE		  Number 0022
+WM_CLEAR			  Number 0303
+WM_CLOSE			  Number 0010
+WM_COALESCE_FIRST		  Number 0390
+WM_COALESCE_LAST		  Number 039F
+WM_COMMAND			  Number 0111
+WM_COMMNOTIFY			  Number 0044
+WM_COMPACTING			  Number 0041
+WM_COMPAREITEM			  Number 0039
+WM_COPY				  Number 0301
+WM_CREATE			  Number 0001
+WM_CTLCOLOR			  Number 0019
+WM_CUT				  Number 0300
+WM_DEADCHAR			  Number 0103
+WM_DELETEITEM			  Number 002D
+WM_DESTROY			  Number 0002
+WM_DESTROYCLIPBOARD		  Number 0307
+WM_DEVMODECHANGE		  Number 001B
+WM_DRAWCLIPBOARD		  Number 0308
+WM_DRAWITEM			  Number 002B
+WM_DROPFILES			  Number 0233
+WM_ENABLE			  Number 000A
+WM_ENDSESSION			  Number 0016
+WM_ENTERIDLE			  Number 0121
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 59
+Symbol Table
+
+
+
+WM_ERASEBKGND			  Number 0014
+WM_FONTCHANGE			  Number 001D
+WM_GETDLGCODE			  Number 0087
+WM_GETFONT			  Number 0031
+WM_GETMINMAXINFO		  Number 0024
+WM_GETTEXT			  Number 000D
+WM_GETTEXTLENGTH		  Number 000E
+WM_HOTKEY			  Number 0312
+WM_HSCROLL			  Number 0114
+WM_HSCROLLCLIPBOARD		  Number 030E
+WM_ICONERASEBKGND		  Number 0027
+WM_INITDIALOG			  Number 0110
+WM_INITMENU			  Number 0116
+WM_INITMENUPOPUP		  Number 0117
+WM_KEYDOWN			  Number 0100
+WM_KEYFIRST			  Number 0100
+WM_KEYLAST			  Number 0108
+WM_KEYUP			  Number 0101
+WM_KILLFOCUS			  Number 0008
+WM_LBUTTONDBLCLK		  Number 0203
+WM_LBUTTONDOWN			  Number 0201
+WM_LBUTTONUP			  Number 0202
+WM_MBUTTONDBLCLK		  Number 0209
+WM_MBUTTONDOWN			  Number 0207
+WM_MBUTTONUP			  Number 0208
+WM_MDIACTIVATE			  Number 0222
+WM_MDICASCADE			  Number 0227
+WM_MDICREATE			  Number 0220
+WM_MDIDESTROY			  Number 0221
+WM_MDIGETACTIVE			  Number 0229
+WM_MDIICONARRANGE		  Number 0228
+WM_MDIMAXIMIZE			  Number 0225
+WM_MDINEXT			  Number 0224
+WM_MDIRESTORE			  Number 0223
+WM_MDISETMENU			  Number 0230
+WM_MDITILE			  Number 0226
+WM_MEASUREITEM			  Number 002C
+WM_MENUCHAR			  Number 0120
+WM_MENUSELECT			  Number 011F
+WM_MOUSEACTIVATE		  Number 0021
+WM_MOUSEFIRST			  Number 0200
+WM_MOUSELAST			  Number 0209
+WM_MOUSEMOVE			  Number 0200
+WM_MOVE				  Number 0003
+WM_NCACTIVATE			  Number 0086
+WM_NCCALCSIZE			  Number 0083
+WM_NCCREATE			  Number 0081
+WM_NCDESTROY			  Number 0082
+WM_NCHITTEST			  Number 0084
+WM_NCLBUTTONDBLCLK		  Number 00A3
+WM_NCLBUTTONDOWN		  Number 00A1
+WM_NCLBUTTONUP			  Number 00A2
+WM_NCMBUTTONDBLCLK		  Number 00A9
+WM_NCMBUTTONDOWN		  Number 00A7
+WM_NCMBUTTONUP			  Number 00A8
+WM_NCMOUSEMOVE			  Number 00A0
+WM_NCPAINT			  Number 0085
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 60
+Symbol Table
+
+
+
+WM_NCRBUTTONDBLCLK		  Number 00A6
+WM_NCRBUTTONDOWN		  Number 00A4
+WM_NCRBUTTONUP			  Number 00A5
+WM_NEXTDLGCTL			  Number 0028
+WM_NULL				  Number 0000
+WM_PAINT			  Number 000F
+WM_PAINTCLIPBOARD		  Number 0309
+WM_PAINTICON			  Number 0026
+WM_PALETTECHANGED		  Number 0311
+WM_PALETTEISCHANGING		  Number 0310
+WM_PARENTNOTIFY			  Number 0210
+WM_PASTE			  Number 0302
+WM_PENWINFIRST			  Number 0380
+WM_PENWINLAST			  Number 038F
+WM_POWER			  Number 0048
+WM_QUERYDRAGICON		  Number 0037
+WM_QUERYENDSESSION		  Number 0011
+WM_QUERYNEWPALETTE		  Number 030F
+WM_QUERYOPEN			  Number 0013
+WM_QUEUESYNC			  Number 0023
+WM_QUIT				  Number 0012
+WM_RBUTTONDBLCLK		  Number 0206
+WM_RBUTTONDOWN			  Number 0204
+WM_RBUTTONUP			  Number 0205
+WM_RENDERALLFORMATS		  Number 0306
+WM_RENDERFORMAT			  Number 0305
+WM_SETCURSOR			  Number 0020
+WM_SETFOCUS			  Number 0007
+WM_SETFONT			  Number 0030
+WM_SETREDRAW			  Number 000B
+WM_SETTEXT			  Number 000C
+WM_SHOWWINDOW			  Number 0018
+WM_SIZE				  Number 0005
+WM_SIZECLIPBOARD		  Number 030B
+WM_SPOOLERSTATUS		  Number 002A
+WM_STATE			  Number 0000
+WM_SYSCHAR			  Number 0106
+WM_SYSCOLORCHANGE		  Number 0015
+WM_SYSCOMMAND			  Number 0112
+WM_SYSDEADCHAR			  Number 0107
+WM_SYSKEYDOWN			  Number 0104
+WM_SYSKEYUP			  Number 0105
+WM_SYSTEMERROR			  Number 0017
+WM_TIMECHANGE			  Number 001E
+WM_TIMER			  Number 0113
+WM_UNDO				  Number 0304
+WM_USER				  Number 0400
+WM_VKEYTOITEM			  Number 002E
+WM_VSCROLL			  Number 0115
+WM_VSCROLLCLIPBOARD		  Number 030A
+WM_WINDOWPOSCHANGED		  Number 0047
+WM_WINDOWPOSCHANGING		  Number 0046
+WM_WININICHANGE			  Number 001A
+WRITEFILE			  Near32 FLAT:---- Extern
+WR_N				  Near32 FLAT:053B
+WSADESCRIPTION_LEN		  Number 0100
+WSASYS_STATUS_LEN		  Number 0080
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 61
+Symbol Table
+
+
+
+WS_BORDER			  Number 00800000
+WS_CAPTION			  Number 00C00000
+WS_CHILD			  Number 40000000
+WS_CLIPCHILDREN			  Number 02000000
+WS_CLIPSIBLINGS			  Number 04000000
+WS_DISABLED			  Number 08000000
+WS_DLGFRAME			  Number 00400000
+WS_EX_ACCEPTFILES		  Number 0010
+WS_EX_APPWINDOW			  Number 00040000
+WS_EX_CLIENTEDGE		  Number 0200
+WS_EX_CONTEXTHELP		  Number 0400
+WS_EX_CONTROLPARENT		  Number 00010000
+WS_EX_DLGMODALFRAME		  Number 0001
+WS_EX_LEFT			  Number 0000
+WS_EX_LEFTSCROLLBAR		  Number 4000
+WS_EX_LTRREADING		  Number 0000
+WS_EX_MDICHILD			  Number 0040
+WS_EX_NOPARENTNOTIFY		  Number 0004
+WS_EX_RIGHT			  Number 1000
+WS_EX_RIGHTSCROLLBAR		  Number 0000
+WS_EX_RTLREADING		  Number 2000
+WS_EX_STATICEDGE		  Number 00020000
+WS_EX_TOOLWINDOW		  Number 0080
+WS_EX_TOPMOST			  Number 0008
+WS_EX_TRANSPARENT		  Number 0020
+WS_EX_WINDOWEDGE		  Number 0100
+WS_GROUP			  Number 00020000
+WS_HREDRAW			  Number 00020000
+WS_HSCROLL			  Number 00100000
+WS_ICONICPOPUP			  Number C0000000
+WS_MAXIMIZE			  Number 01000000
+WS_MAXIMIZEBOX			  Number 00010000
+WS_MINIMIZE			  Number 20000000
+WS_MINIMIZEBOX			  Number 00020000
+WS_OVERLAPPED			  Number 0000
+WS_OVERLAPPEDWINDOW		  Number 00CF0000
+WS_POPUP			  Number 80000000
+WS_POPUPWINDOW			  Number 80880000
+WS_SYSMENU			  Number 00080000
+WS_TABSTOP			  Number 00010000
+WS_THICKFRAME			  Number 00040000
+WS_TILED			  Alias	 WS_OVERLAPPED
+WS_TILEDWINDOW			  Alias	 WS_OVERLAPPEDWINDOW
+WS_VISIBLE			  Number 10000000
+WS_VREDRAW			  Number 00010000
+WS_VSCROLL			  Number 00200000
+X1				  Near32 FLAT:0194
+XL1				  Near32 FLAT:017E
+_OPC_EMMS			  Number 0077
+_OPC_MOVD_LD			  Number 006E
+_OPC_MOVD_ST			  Number 007E
+_OPC_MOVQ_LD			  Number 006F
+_OPC_MOVQ_ST			  Number 007F
+_OPC_PACKSSDW			  Number 006B
+_OPC_PACKSSWB			  Number 0063
+_OPC_PACKUSWB			  Number 0067
+_OPC_PADDB			  Number 00FC
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 62
+Symbol Table
+
+
+
+_OPC_PADDD			  Number 00FE
+_OPC_PADDSB			  Number 00EC
+_OPC_PADDSW			  Number 00ED
+_OPC_PADDUSB			  Number 00DC
+_OPC_PADDUSW			  Number 00DD
+_OPC_PADDW			  Number 00FD
+_OPC_PAND			  Number 00DB
+_OPC_PANDN			  Number 00DF
+_OPC_PCMPEQB			  Number 0074
+_OPC_PCMPEQD			  Number 0076
+_OPC_PCMPEQW			  Number 0075
+_OPC_PCMPGTB			  Number 0064
+_OPC_PCMPGTD			  Number 0066
+_OPC_PCMPGTW			  Number 0065
+_OPC_PMADDWD			  Number 00F5
+_OPC_PMULHW			  Number 00E5
+_OPC_PMULLW			  Number 00D5
+_OPC_POR			  Number 00EB
+_OPC_PSHIMD			  Number 0072
+_OPC_PSHIMQ			  Number 0073
+_OPC_PSHIMW			  Number 0071
+_OPC_PSLLD			  Number 00F2
+_OPC_PSLLQ			  Number 00F3
+_OPC_PSLLW			  Number 00F1
+_OPC_PSRAD			  Number 00E2
+_OPC_PSRAW			  Number 00E1
+_OPC_PSRLD			  Number 00D2
+_OPC_PSRLQ			  Number 00D3
+_OPC_PSRLW			  Number 00D1
+_OPC_PSUBB			  Number 00F8
+_OPC_PSUBD			  Number 00FA
+_OPC_PSUBSB			  Number 00E8
+_OPC_PSUBSW			  Number 00E9
+_OPC_PSUBUSB			  Number 00D8
+_OPC_PSUBUSW			  Number 00D9
+_OPC_PSUBW			  Number 00F9
+_OPC_PUNPCKHBW			  Number 0068
+_OPC_PUNPCKHDQ			  Number 006A
+_OPC_PUNPCKHWD			  Number 0069
+_OPC_PUNPCKLBW			  Number 0060
+_OPC_PUNPCKLDQ			  Number 0062
+_OPC_PUNPCKLWD			  Number 0061
+_OPC_PXOR			  Number 00EF
+
+Macro Name
+
+EMMS
+MOVD
+MOVQ
+P0
+PACKSSDW
+PACKSSWB
+PACKUSWB
+PADDB
+PADDD
+PADDSB
+PADDSW
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 63
+Symbol Table
+
+
+
+PADDUSB
+PADDUSW
+PADDW
+PAND
+PANDN
+PCMPEQB
+PCMPEQD
+PCMPEQW
+PCMPGTB
+PCMPGTD
+PCMPGTW
+PMADDWD
+PMULHW
+PMULLW
+POR
+PSLLD
+PSLLQ
+PSLLW
+PSRAD
+PSRAW
+PSRLD
+PSRLQ
+PSRLW
+PSUBB
+PSUBD
+PSUBSB
+PSUBSW
+PSUBUSB
+PSUBUSW
+PSUBW
+PUNPCKHBW
+PUNPCKHDQ
+PUNPCKHWD
+PUNPCKLBW
+PUNPCKLDQ
+PUNPCKLWD
+PXOR
+RD1
+RD2
+RDTSC
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  32  0095 Dword  Public  DATA
+FLAT				  Group
+_TEXT				  32  06EE Dword  Public  CODE
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 64
+Error Summary
+
+
+
+**Error** lz.asm(103) Illegal instruction
+**Error** lz.asm(112) Undefined	symbol:	OF
+**Error** lz.asm(113) Undefined	symbol:	OF
+**Error** lz.asm(114) Illegal instruction
+**Error** lz.asm(115) Illegal instruction
+**Error** lz.asm(116) Illegal instruction
+**Error** lz.asm(117) P0(2) Illegal instruction
+**Error** lz.asm(127) Illegal instruction
+**Error** lz.asm(128) Illegal instruction
+**Error** lz.asm(129) Illegal instruction
+**Error** lz.asm(137) Illegal instruction
+**Error** lz.asm(140) Illegal instruction
+**Error** lz.asm(142) Illegal instruction
+**Error** lz.asm(143) Illegal instruction
+**Error** lz.asm(144) Illegal instruction
+**Error** lz.asm(145) P0(2) Illegal instruction
+**Error** lz.asm(148) P0(2) Illegal instruction
+**Error** lz.asm(153) Illegal instruction
+**Error** lz.asm(154) Illegal instruction
+**Error** lz.asm(155) Illegal instruction
+**Error** lz.asm(162) Illegal instruction
+**Error** lz.asm(164) Illegal instruction
+**Error** lz.asm(171) Illegal instruction
+**Error** lz.asm(173) Illegal instruction
+**Error** lz.asm(174) Illegal instruction
+**Error** lz.asm(175) Illegal instruction
+**Error** lz.asm(176) Illegal instruction
+**Error** lz.asm(177) Illegal instruction
+**Error** lz.asm(190) P0(2) Illegal instruction
+**Error** lz.asm(191) Illegal instruction
+**Error** lz.asm(192) Illegal instruction
+**Error** lz.asm(193) Illegal instruction
+**Error** lz.asm(194) Illegal instruction
+**Error** lz.asm(195) Illegal instruction
+**Error** lz.asm(196) Illegal instruction
+**Error** lz.asm(209) Illegal instruction
+**Error** lz.asm(210) Illegal instruction
+**Error** lz.asm(221) Illegal instruction
+*Warning* lz.asm(222) Argument needs type override
+**Error** lz.asm(234) Undefined	symbol:	OF
+**Error** lz.asm(236) Illegal instruction
+**Error** lz.asm(249) Illegal instruction
+**Error** lz.asm(305) Illegal instruction
+**Error** lz.asm(307) Illegal instruction
+**Error** lz.asm(320) Illegal instruction
+*Warning* lz.asm(321) Argument needs type override
+**Error** lz.asm(353) Illegal instruction
+**Error** lz.asm(364) Illegal instruction
+**Error** lz.asm(390) Illegal instruction
+**Error** lz.asm(394) Illegal instruction
+**Error** lz.asm(488) Illegal instruction
+**Error** lz.asm(489) Illegal instruction
+**Error** lz.asm(498) Illegal instruction
+**Error** lz.asm(514) Illegal instruction
+**Error** lz.asm(547) Illegal instruction
+**Error** lz.asm(550) Illegal instruction
+*Warning* lz.asm(558) Argument needs type override
+Turbo Assembler	 Version 5.0	    10-20-18 13:59:10	    Page 65
+Error Summary
+
+
+
+*Warning* lz.asm(563) Reserved word used as symbol: NE
+**Error** lz.asm(582) Illegal instruction
+**Error** lz.asm(661) Illegal instruction
+**Error** lz.asm(685) Illegal instruction
+**Error** lz.asm(723) P0(2) Illegal instruction
+**Error** lz.asm(724) Illegal instruction
+**Error** lz.asm(726) Illegal instruction
+**Error** lz.asm(727) Illegal instruction
+**Error** lz.asm(728) Illegal instruction
+**Error** lz.asm(734) Illegal instruction
+**Error** lz.asm(746) Illegal instruction
+**Error** lz.asm(775) Illegal instruction
+**Error** lz.asm(779) Illegal instruction
+**Error** lz.asm(790) Illegal instruction
+**Error** lz.asm(791) Illegal instruction
+**Error** lz.asm(796) Illegal instruction
+
